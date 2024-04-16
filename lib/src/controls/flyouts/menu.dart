@@ -1,7 +1,10 @@
+// ignore_for_file: avoid_function_literals_in_foreach_calls
+
 import 'dart:async';
 
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart' as material;
 
 /// Menu flyouts are used in menu and context menu scenarios to display a list
 /// of commands or options when requested by the user. A menu flyout shows a
@@ -24,6 +27,8 @@ class MenuFlyout extends StatefulWidget {
     this.elevation = 8.0,
     this.constraints,
     this.padding = const EdgeInsetsDirectional.only(top: 8.0),
+    this.enableAutoSize = true,
+    this.autoSizePresetWidth = 120.0,
   });
 
   /// {@template fluent_ui.flyouts.menu.items}
@@ -58,6 +63,14 @@ class MenuFlyout extends StatefulWidget {
   /// The padding applied the [items], with correct handling when scrollable
   final EdgeInsetsGeometry? padding;
 
+  /// Whether the flyout should auto size to the width of the largest item <br>
+  /// Default: [true]
+  final bool enableAutoSize;
+
+  /// The width of the flyout when [enableAutoSize] is true <br>
+  /// Default: [120.0]
+  final double autoSizePresetWidth;
+
   static const EdgeInsetsGeometry itemsPadding = EdgeInsets.symmetric(
     horizontal: 8.0,
   );
@@ -68,6 +81,29 @@ class MenuFlyout extends StatefulWidget {
 
 class _MenuFlyoutState extends State<MenuFlyout> {
   var keys = <GlobalKey>[];
+
+  /// The width of the longest item text
+  double itemWidth = 0.0;
+
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    generateKeys();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _getLongestTextWidth();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   void generateKeys() {
     if (widget.items.whereType<MenuFlyoutSubItem>().isNotEmpty) {
@@ -81,17 +117,89 @@ class _MenuFlyoutState extends State<MenuFlyout> {
     }
   }
 
-  @override
-  void initState() {
-    super.initState();
-    generateKeys();
+  /// Get the longest text width of the items
+  void _getLongestTextWidth() {
+    if (!widget.enableAutoSize) return;
+
+    final flyoutMenuItems = widget.items.whereType<MenuFlyoutItemBase>().toList();
+    final textWidgets = _findTextWidgets(flyoutMenuItems);
+    final textWidth = _findLongestTextWidth(textWidgets);
+
+    if (!mounted) return;
+
+    setState(() {
+      itemWidth = textWidth + widget.autoSizePresetWidth;
+    });
+  }
+
+  /// Find all the text widgets in the items
+  List<Text> _findTextWidgets(List<MenuFlyoutItemBase> items) {
+    var textWidgets = <Text>[];
+
+    for (var item in items) {
+      if (item is MenuFlyoutItem) {
+        item = item;
+        if (item.text is Text) {
+          textWidgets.add(item.text as Text);
+        }
+      }
+
+      if (item is MenuFlyoutSubItem) {
+        item = item;
+
+        if (item.text is Text) {
+          textWidgets.add(item.text as Text);
+        }
+
+        if (item.text is material.InkWell) {
+          final inkWell = item.text as material.InkWell;
+
+          if (inkWell.child is Text) {
+            textWidgets.add(inkWell.child as Text);
+          }
+        }
+      }
+    }
+
+    return textWidgets;
+  }
+
+  /// Find the longest text width of the items
+  double _findLongestTextWidth(List<Text> textWidgets) {
+    var longestTextWidth = 0.0;
+
+    textWidgets.forEach((text) {
+      final textWidth = _getTextWidth(text) ?? 0.0;
+
+      // print('${text.data} / $textWidth > $longestTextWidth');
+
+      if (textWidth > longestTextWidth) {
+        longestTextWidth = textWidth;
+      }
+    });
+
+    return longestTextWidth;
+  }
+
+  /// Get the width of the given [text]
+  double? _getTextWidth(Text? text) {
+    if (text == null) return null;
+
+    final textPainter = TextPainter(
+      text: TextSpan(
+        text: text.data,
+        style: text.style,
+      ),
+      maxLines: 1,
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    return textPainter.size.width.toInt() + 0.0;
   }
 
   @override
   Widget build(BuildContext context) {
-    final hasLeading = widget.items
-        .whereType<MenuFlyoutItem>()
-        .any((item) => item.leading != null);
+    final hasLeading = widget.items.whereType<MenuFlyoutItem>().any((item) => item.leading != null);
 
     final menuInfo = MenuInfoProvider.of(context);
     final parent = Flyout.maybeOf(context);
@@ -106,24 +214,39 @@ class _MenuFlyoutState extends State<MenuFlyout> {
       useAcrylic: DisableAcrylic.of(context) != null,
       child: ScrollConfiguration(
         behavior: const _MenuScrollBehavior(),
-        child: SingleChildScrollView(
-          padding: widget.padding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: List.generate(widget.items.length, (index) {
-              final item = widget.items[index];
-              if (item is MenuFlyoutItem) item._useIconPlaceholder = hasLeading;
-              if (item is MenuFlyoutSubItem && keys.isNotEmpty) {
-                item
-                  .._key = keys[index] as GlobalKey<_MenuFlyoutSubItemState>?
-                  ..disableAcyrlic = DisableAcrylic.of(context) != null;
-              }
-              return KeyedSubtree(
-                key: item.key,
-                child: item.build(context),
-              );
-            }),
+        child: Scrollbar(
+          controller: _scrollController,
+          child: SingleChildScrollView(
+            controller: _scrollController,
+            padding: widget.padding,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: List.generate(widget.items.length, (index) {
+                final item = widget.items[index];
+
+                if (item is MenuFlyoutItem) {
+                  item
+                    ..enableAutoPop = true
+                    .._useIconPlaceholder = hasLeading;
+                }
+
+                if (item is MenuFlyoutSubItem && keys.isNotEmpty) {
+                  item
+                    .._key = keys[index] as GlobalKey<_MenuFlyoutSubItemState>?
+                    ..enableAutoPop = false
+                    ..disableAcyrlic = DisableAcrylic.of(context) != null;
+                }
+
+                return KeyedSubtree(
+                  key: item.key,
+                  child: SizedBox(
+                    width: widget.enableAutoSize ? itemWidth : null,
+                    child: item.build(context),
+                  ),
+                );
+              }),
+            ),
           ),
         ),
       ),
@@ -132,14 +255,12 @@ class _MenuFlyoutState extends State<MenuFlyout> {
     if (keys.isNotEmpty) {
       content = MouseRegion(
         onHover: (event) {
-          for (final subItem
-              in keys.whereType<GlobalKey<_MenuFlyoutSubItemState>>()) {
+          for (final subItem in keys.whereType<GlobalKey<_MenuFlyoutSubItemState>>()) {
             final state = subItem.currentState;
             if (state == null || subItem.currentContext == null) continue;
             if (!state.isShowing(menuInfo)) continue;
 
-            final itemBox =
-                subItem.currentContext!.findRenderObject() as RenderBox;
+            final itemBox = subItem.currentContext!.findRenderObject() as RenderBox;
             final itemRect = itemBox.localToGlobal(
                   Offset.zero,
                   ancestor: parent?.widget.root?.context.findRenderObject(),
@@ -168,8 +289,7 @@ class _MenuScrollBehavior extends FluentScrollBehavior {
   TargetPlatform getPlatform(BuildContext context) => defaultTargetPlatform;
 
   @override
-  ScrollPhysics getScrollPhysics(BuildContext context) =>
-      const ClampingScrollPhysics();
+  ScrollPhysics getScrollPhysics(BuildContext context) => const ClampingScrollPhysics();
 }
 
 /// See also:
@@ -229,6 +349,7 @@ class MenuFlyoutItem extends MenuFlyoutItemBase {
     required this.text,
     this.trailing,
     required this.onPressed,
+    this.onLongPressed,
     this.selected = false,
   });
 
@@ -261,29 +382,38 @@ class MenuFlyoutItem extends MenuFlyoutItemBase {
 
   bool _useIconPlaceholder = false;
 
+  /// Whether the sub item should auto pop when the user clicks it
+  bool enableAutoPop = false;
+
+  /// Called when the item is long pressed.
+  final VoidCallback? onLongPressed;
+
   @override
   Widget build(BuildContext context) {
     final size = Flyout.of(context).size;
+
     return Container(
       width: size.isEmpty ? null : size.width,
       padding: MenuFlyout.itemsPadding,
       child: FlyoutListTile(
         selected: selected,
         showSelectedIndicator: false,
-        icon: leading ??
-            () {
-              if (_useIconPlaceholder) return const Icon(null);
-              return null;
-            }(),
+        icon: leading ?? (_useIconPlaceholder ? const Icon(null) : null),
         text: text,
         trailing: IconTheme.merge(
           data: const IconThemeData(size: 12.0),
           child: trailing ?? const SizedBox.shrink(),
         ),
-        onPressed: () {
-          Navigator.of(context).maybePop();
-          onPressed?.call();
-        },
+        onPressed: onPressed == null
+            ? null
+            : () {
+                if (enableAutoPop) {
+                  Flyout.of(context).close();
+                  // Navigator.of(context).maybePop();
+                }
+                onPressed?.call();
+              },
+        onLongPressed: onLongPressed,
       ),
     );
   }
@@ -397,16 +527,25 @@ class _MenuFlyoutSubItem extends StatefulWidget {
   State<_MenuFlyoutSubItem> createState() => _MenuFlyoutSubItemState();
 }
 
-class _MenuFlyoutSubItemState extends State<_MenuFlyoutSubItem>
-    with SingleTickerProviderStateMixin {
+class _MenuFlyoutSubItemState extends State<_MenuFlyoutSubItem> with SingleTickerProviderStateMixin {
   /// The animation controller responsible for the animation of the flyout
   ///
   /// The duration is defined at build time
-  late final transitionController = AnimationController(vsync: this);
+  late final AnimationController transitionController;
 
   final menuKey = GlobalKey<_MenuFlyoutState>();
 
   Timer? showTimer;
+
+  @override
+  void initState() {
+    transitionController = AnimationController(
+      vsync: this,
+      duration: Flyout.of(context).transitionDuration,
+      reverseDuration: Flyout.of(context).transitionDuration,
+    );
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -414,16 +553,15 @@ class _MenuFlyoutSubItemState extends State<_MenuFlyoutSubItem>
     super.dispose();
   }
 
-  @override
-  void didUpdateWidget(_MenuFlyoutSubItem oldWidget) {
-    super.didUpdateWidget(oldWidget);
+  // @override
+  // void didUpdateWidget(_MenuFlyoutSubItem oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
 
-    final parent = Flyout.of(context);
-    if (transitionController.duration == null ||
-        transitionController.duration != parent.transitionDuration) {
-      transitionController.duration = parent.transitionDuration;
-    }
-  }
+  //   final parent = Flyout.of(context);
+  //   if (transitionController.duration != parent.transitionDuration) {
+  //     transitionController.duration = parent.transitionDuration;
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -435,8 +573,11 @@ class _MenuFlyoutSubItemState extends State<_MenuFlyoutSubItem>
       leading: widget.item.leading,
       selected: isShowing(menuInfo),
       trailing: widget.item.trailing,
-      onPressed: () {
-        show(menuInfo);
+      onPressed: () => show(menuInfo),
+      onLongPressed: () {
+        if (mounted) {
+          show(menuInfo);
+        }
       },
     ).build(context);
 
@@ -448,9 +589,8 @@ class _MenuFlyoutSubItemState extends State<_MenuFlyoutSubItem>
           });
         },
         onExit: (event) {
-          if (showTimer != null && showTimer!.isActive) {
-            showTimer!.cancel();
-          }
+          showTimer?.cancel();
+          showTimer = null;
         },
         child: item,
       );
@@ -527,7 +667,7 @@ class _MenuFlyoutSubItemState extends State<_MenuFlyoutSubItem>
             .whereType<GlobalKey<_MenuFlyoutSubItemState>>()
             .map((child) => child.currentState!.close(menuInfo)),
       transitionController.reverse(),
-    ]);
+    ]).catchError((_) => []);
 
     menuInfo.remove(menuKey);
 
@@ -553,9 +693,7 @@ class _SubItemPositionDelegate extends SingleChildLayoutDelegate {
 
   @override
   Offset getPositionForChild(Size rootSize, Size flyoutSize) {
-    var x = parentRect.left +
-        parentRect.size.width -
-        MenuFlyout.itemsPadding.horizontal / 2;
+    var x = parentRect.left + parentRect.size.width - MenuFlyout.itemsPadding.horizontal / 2;
 
     // if the flyout will overflow the screen on the right
     final willOverflowX = x + flyoutSize.width + margin > rootSize.width;
@@ -567,9 +705,7 @@ class _SubItemPositionDelegate extends SingleChildLayoutDelegate {
     //
     // otherwise, we position the flyout at the end of the screen
     if (willOverflowX) {
-      final rightX = parentRect.left -
-          flyoutSize.width +
-          MenuFlyout.itemsPadding.horizontal / 2;
+      final rightX = parentRect.left - flyoutSize.width + MenuFlyout.itemsPadding.horizontal / 2;
       if (rightX > margin) {
         x = rightX;
       } else {

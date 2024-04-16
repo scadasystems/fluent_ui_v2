@@ -71,8 +71,7 @@ class _Flyout2ScreenState extends State<Flyout2Screen> with PageMixin {
                   ),
                   ToggleSwitch(
                     checked: dismissOnPointerMoveAway,
-                    onChanged: (v) =>
-                        setState(() => dismissOnPointerMoveAway = v),
+                    onChanged: (v) => setState(() => dismissOnPointerMoveAway = v),
                     content: const Text('Dismiss on pointer move away'),
                   ),
                   ToggleSwitch(
@@ -82,9 +81,7 @@ class _Flyout2ScreenState extends State<Flyout2Screen> with PageMixin {
                   ),
                   ComboBox<FlyoutPlacementMode>(
                     placeholder: const Text('Placeholder'),
-                    items: FlyoutPlacementMode.values
-                        .where((mode) => mode != FlyoutPlacementMode.auto)
-                        .map((mode) {
+                    items: FlyoutPlacementMode.values.where((mode) => mode != FlyoutPlacementMode.auto).map((mode) {
                       return ComboBoxItem(
                         value: mode,
                         child: Text(mode.name.uppercaseFirst()),
@@ -290,7 +287,8 @@ FlyoutTarget(
                         MenuFlyoutItem(
                           leading: const Icon(FluentIcons.share),
                           text: const Text('Share'),
-                          onPressed: Flyout.of(context).close,
+                          onPressed: () {},
+                          // onPressed: Flyout.of(context).close,
                         ),
                         MenuFlyoutItem(
                           leading: const Icon(FluentIcons.copy),
@@ -447,9 +445,7 @@ return GestureDetector(
                     ..onSecondaryTapUp = (d) {
                       Navigator.of(context).pop();
 
-                      final box = Navigator.of(context)
-                          .context
-                          .findRenderObject() as RenderBox;
+                      final box = Navigator.of(context).context.findRenderObject() as RenderBox;
                       final position = box.localToGlobal(
                         d.localPosition,
                         ancestor: box,

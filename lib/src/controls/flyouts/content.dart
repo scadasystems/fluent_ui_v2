@@ -103,10 +103,9 @@ class FlyoutListTile extends StatelessWidget {
   /// Creates a flyout list tile.
   const FlyoutListTile({
     super.key,
-    this.onPressed,
+    required this.text,
     this.tooltip,
     this.icon,
-    required this.text,
     this.trailing,
     this.focusNode,
     this.autofocus = false,
@@ -114,9 +113,13 @@ class FlyoutListTile extends StatelessWidget {
     this.margin = const EdgeInsetsDirectional.only(bottom: 5.0),
     this.selected = false,
     this.showSelectedIndicator = true,
+    this.onPressed,
+    this.onLongPressed,
   });
 
   final VoidCallback? onPressed;
+
+  final VoidCallback? onLongPressed;
 
   /// The tile tooltip text
   final String? tooltip;
@@ -157,6 +160,7 @@ class FlyoutListTile extends StatelessWidget {
     return HoverButton(
       key: key,
       onPressed: onPressed,
+      onLongPress: onLongPressed,
       focusNode: focusNode,
       autofocus: autofocus,
       semanticLabel: semanticLabel,
@@ -194,9 +198,7 @@ class FlyoutListTile extends StatelessWidget {
                   ),
                 ),
               Flexible(
-                fit: size == null || size.isEmpty
-                    ? FlexFit.loose
-                    : FlexFit.tight,
+                fit: size == null || size.isEmpty ? FlexFit.loose : FlexFit.tight,
                 child: Padding(
                   padding: const EdgeInsetsDirectional.only(end: 10.0),
                   child: DefaultTextStyle.merge(
