@@ -127,6 +127,7 @@ class TextFormBox extends ControllableFormBox {
     bool scribbleEnabled = true,
     Color? highlightColor,
     Color? errorHighlightColor,
+    TextStyle? errorTextStyle,
     Color? unfocusedColor,
     EditableTextContextMenuBuilder? contextMenuBuilder,
     TextMagnifierConfiguration? magnifierConfiguration,
@@ -143,12 +144,10 @@ class TextFormBox extends ControllableFormBox {
           !expands || (maxLines == null && minLines == null),
           'minLines and maxLines must be null when expands is true.',
         ),
-        assert(!obscureText || maxLines == 1,
-            'Obscured fields cannot be multiline.'),
+        assert(!obscureText || maxLines == 1, 'Obscured fields cannot be multiline.'),
         assert(maxLength == null || maxLength > 0),
         super(
-          initialValue:
-              controller != null ? controller.text : (initialValue ?? ''),
+          initialValue: controller != null ? controller.text : (initialValue ?? ''),
           builder: (FormFieldState<String> field) {
             assert(debugCheckHasFluentTheme(field.context));
             final theme = FluentTheme.of(field.context);
@@ -165,8 +164,12 @@ class TextFormBox extends ControllableFormBox {
               bucket: field.bucket,
               child: FormRow(
                 padding: EdgeInsets.zero,
-                error:
-                    (field.errorText == null) ? null : Text(field.errorText!),
+                error: (field.errorText == null)
+                    ? null
+                    : Text(
+                        field.errorText!,
+                        style: errorTextStyle,
+                      ),
                 child: TextBox(
                   controller: state._effectiveController,
                   focusNode: focusNode,
@@ -183,14 +186,10 @@ class TextFormBox extends ControllableFormBox {
                   obscuringCharacter: obscuringCharacter,
                   obscureText: obscureText,
                   autocorrect: autocorrect,
-                  smartDashesType: smartDashesType ??
-                      (obscureText
-                          ? SmartDashesType.disabled
-                          : SmartDashesType.enabled),
-                  smartQuotesType: smartQuotesType ??
-                      (obscureText
-                          ? SmartQuotesType.disabled
-                          : SmartQuotesType.enabled),
+                  smartDashesType:
+                      smartDashesType ?? (obscureText ? SmartDashesType.disabled : SmartDashesType.enabled),
+                  smartQuotesType:
+                      smartQuotesType ?? (obscureText ? SmartQuotesType.disabled : SmartQuotesType.enabled),
                   enableSuggestions: enableSuggestions,
                   maxLines: maxLines,
                   minLines: minLines,
@@ -222,8 +221,7 @@ class TextFormBox extends ControllableFormBox {
                   suffixMode: suffixMode,
                   highlightColor: (field.errorText == null)
                       ? highlightColor
-                      : errorHighlightColor ??
-                          Colors.red.defaultBrushFor(theme.brightness),
+                      : errorHighlightColor ?? Colors.red.defaultBrushFor(theme.brightness),
                   unfocusedColor: unfocusedColor,
                   dragStartBehavior: dragStartBehavior,
                   padding: padding,
@@ -252,8 +250,7 @@ class TextFormBox extends ControllableFormBox {
 class TextFormBoxState extends FormFieldState<String> {
   TextEditingController? _controller;
 
-  TextEditingController? get _effectiveController =>
-      widget.controller ?? _controller;
+  TextEditingController? get _effectiveController => widget.controller ?? _controller;
 
   @override
   ControllableFormBox get widget => super.widget as ControllableFormBox;
@@ -276,8 +273,7 @@ class TextFormBoxState extends FormFieldState<String> {
       widget.controller?.addListener(_handleControllerChanged);
 
       if (oldWidget.controller != null && widget.controller == null) {
-        _controller =
-            TextEditingController.fromValue(oldWidget.controller!.value);
+        _controller = TextEditingController.fromValue(oldWidget.controller!.value);
       }
 
       if (widget.controller != null) {
