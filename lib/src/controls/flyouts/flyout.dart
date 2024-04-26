@@ -119,8 +119,7 @@ enum FlyoutPlacementMode {
       case FlyoutPlacementMode.bottomRight:
         return BoxConstraints(
           maxWidth: rootSize.width._ensurePositive(),
-          maxHeight:
-              (rootSize.height - margin - targetOffset.dy)._ensurePositive(),
+          maxHeight: (rootSize.height - margin - targetOffset.dy)._ensurePositive(),
         );
       case FlyoutPlacementMode.topCenter:
       case FlyoutPlacementMode.topLeft:
@@ -160,12 +159,8 @@ enum FlyoutPlacementMode {
     final availableSpace = configuration.autoAvailableSpace!;
 
     if (configuration.horizontal) {
-      final las = FlyoutPlacementMode.left
-          ._getAvailableSpace(targetOffset, rootSize, margin)
-          .biggest;
-      final ras = FlyoutPlacementMode.right
-          ._getAvailableSpace(targetOffset, rootSize, margin)
-          .biggest;
+      final las = FlyoutPlacementMode.left._getAvailableSpace(targetOffset, rootSize, margin).biggest;
+      final ras = FlyoutPlacementMode.right._getAvailableSpace(targetOffset, rootSize, margin).biggest;
 
       if (las.width >= availableSpace && ras.width >= availableSpace) {
         return configuration.preferredMode;
@@ -180,9 +175,7 @@ enum FlyoutPlacementMode {
 
     // preferred available space
     // we perform this check before all the calculation to save computing time
-    final pas = configuration.preferredMode
-        ._getAvailableSpace(targetOffset, rootSize, margin)
-        .biggest;
+    final pas = configuration.preferredMode._getAvailableSpace(targetOffset, rootSize, margin).biggest;
     if (pas.height >= availableSpace) {
       return configuration.preferredMode;
     }
@@ -192,15 +185,10 @@ enum FlyoutPlacementMode {
       FlyoutPlacementMode.topLeft,
       FlyoutPlacementMode.bottomLeft,
     ].contains(configuration.preferredMode);
-    final isCenterPreferred = [
-      FlyoutPlacementMode.topCenter,
-      FlyoutPlacementMode.bottomCenter
-    ].contains(configuration.preferredMode);
-    final isRightPreferred = [
-      FlyoutPlacementMode.right,
-      FlyoutPlacementMode.topRight,
-      FlyoutPlacementMode.bottomRight
-    ].contains(configuration.preferredMode);
+    final isCenterPreferred =
+        [FlyoutPlacementMode.topCenter, FlyoutPlacementMode.bottomCenter].contains(configuration.preferredMode);
+    final isRightPreferred = [FlyoutPlacementMode.right, FlyoutPlacementMode.topRight, FlyoutPlacementMode.bottomRight]
+        .contains(configuration.preferredMode);
 
     final bas = FlyoutPlacementMode.bottomCenter
         ._getAvailableSpace(
@@ -261,15 +249,12 @@ class FlyoutAutoConfiguration {
   })  : assert(preferredMode != FlyoutPlacementMode.auto),
         assert(
           horizontal != null && horizontal
-              ? preferredMode == FlyoutPlacementMode.left ||
-                  preferredMode == FlyoutPlacementMode.right
+              ? preferredMode == FlyoutPlacementMode.left || preferredMode == FlyoutPlacementMode.right
               : true,
           'If the mode horizontal, preferredMode must either be left or right',
         ),
         assert(autoAvailableSpace == null || !autoAvailableSpace.isNegative),
-        horizontal = horizontal ??
-            [FlyoutPlacementMode.left, FlyoutPlacementMode.right]
-                .contains(preferredMode);
+        horizontal = horizontal ?? [FlyoutPlacementMode.left, FlyoutPlacementMode.right].contains(preferredMode);
 }
 
 /// A delegate for computing the layout of a flyout to be displayed according to
@@ -304,9 +289,7 @@ class _FlyoutPositionDelegate extends SingleChildLayoutDelegate {
   @override
   BoxConstraints getConstraintsForChild(BoxConstraints constraints) {
     if (forceAvailableSpace) {
-      final availableSpace = placementMode
-          ._getAvailableSpace(targetOffset, constraints.biggest, margin)
-          .biggest;
+      final availableSpace = placementMode._getAvailableSpace(targetOffset, constraints.biggest, margin).biggest;
 
       return BoxConstraints(
         maxWidth: math.min(availableSpace.width, constraints.biggest.width),
@@ -324,8 +307,7 @@ class _FlyoutPositionDelegate extends SingleChildLayoutDelegate {
     autoPlacementMode = placementMode;
 
     if (autoPlacementMode == FlyoutPlacementMode.auto) {
-      final preferredMode =
-          autoModeConfiguration?.preferredMode ?? defaultPreferred;
+      final preferredMode = autoModeConfiguration?.preferredMode ?? defaultPreferred;
 
       autoPlacementMode = autoPlacementMode!._assignAutoMode(
         targetOffset,
@@ -433,8 +415,7 @@ class _FlyoutPositionDelegate extends SingleChildLayoutDelegate {
 
   @override
   bool shouldRelayout(_FlyoutPositionDelegate oldDelegate) {
-    return targetOffset != oldDelegate.targetOffset ||
-        placementMode != oldDelegate.placementMode;
+    return targetOffset != oldDelegate.targetOffset || placementMode != oldDelegate.placementMode;
   }
 }
 
@@ -669,9 +650,8 @@ class FlyoutController with ChangeNotifier {
                       targetSize: position == null ? targetSize : Size.zero,
                       autoModeConfiguration: autoModeConfiguration,
                       placementMode: placementMode,
-                      defaultPreferred: position == null
-                          ? FlyoutPlacementMode.topCenter
-                          : FlyoutPlacementMode.bottomLeft,
+                      defaultPreferred:
+                          position == null ? FlyoutPlacementMode.topCenter : FlyoutPlacementMode.bottomLeft,
                       margin: margin,
                       shouldConstrainToRootBounds: shouldConstrainToRootBounds,
                       forceAvailableSpace: forceAvailableSpace,
@@ -683,18 +663,13 @@ class FlyoutController with ChangeNotifier {
                       transitionDuration: transitionDuration!,
                       root: navigator,
                       builder: (context) {
-                        final parentBox =
-                            context.findAncestorRenderObjectOfType<
-                                RenderCustomSingleChildLayoutBox>()!;
-                        final delegate =
-                            parentBox.delegate as _FlyoutPositionDelegate;
+                        final parentBox = context.findAncestorRenderObjectOfType<RenderCustomSingleChildLayoutBox>()!;
+                        final delegate = parentBox.delegate as _FlyoutPositionDelegate;
 
-                        final realPlacementMode = delegate.autoPlacementMode ??
-                            delegate.placementMode;
+                        final realPlacementMode = delegate.autoPlacementMode ?? delegate.placementMode;
                         final flyout = Padding(
                           key: flyoutKey,
-                          padding:
-                              realPlacementMode._getAdditionalOffsetPosition(
+                          padding: realPlacementMode._getAdditionalOffsetPosition(
                             position == null ? additionalOffset : 0.0,
                           ),
                           child: builder(context),
@@ -719,13 +694,11 @@ class FlyoutController with ChangeNotifier {
                 onHover: (hover) {
                   if (flyoutKey.currentContext == null) return;
 
-                  final navigatorBox =
-                      navigator.context.findRenderObject() as RenderBox;
+                  final navigatorBox = navigator.context.findRenderObject() as RenderBox;
 
                   // the flyout box needs to be fetched at each [onHover] because the
                   // flyout size may change (a MenuFlyout, for example)
-                  final flyoutBox =
-                      flyoutKey.currentContext!.findRenderObject() as RenderBox;
+                  final flyoutBox = flyoutKey.currentContext!.findRenderObject() as RenderBox;
                   final flyoutRect = flyoutBox.localToGlobal(
                         Offset.zero,
                         ancestor: navigatorBox,
@@ -734,8 +707,7 @@ class FlyoutController with ChangeNotifier {
                   final menusRects = keys.map((key) {
                     if (key.currentContext == null) return Rect.zero;
 
-                    final menuBox =
-                        key.currentContext!.findRenderObject() as RenderBox;
+                    final menuBox = key.currentContext!.findRenderObject() as RenderBox;
                     return menuBox.localToGlobal(
                           Offset.zero,
                           ancestor: navigatorBox,
@@ -745,8 +717,7 @@ class FlyoutController with ChangeNotifier {
 
                   if (!flyoutRect.contains(hover.position) &&
                       !targetRect.contains(hover.position) &&
-                      !menusRects
-                          .any((rect) => rect.contains(hover.position))) {
+                      !menusRects.any((rect) => rect.contains(hover.position))) {
                     navigator.pop();
                   }
                 },
@@ -777,7 +748,10 @@ class FlyoutController with ChangeNotifier {
     ));
 
     _open = false;
-    notifyListeners();
+
+    if (_attachState?.mounted == true) {
+      notifyListeners();
+    }
 
     return result;
   }
