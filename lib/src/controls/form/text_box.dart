@@ -839,7 +839,7 @@ class _TextBoxState extends State<TextBox>
           // Insert a prefix at the front if the prefix visibility mode matches
           // the current text state.
           if (_showPrefixWidget(text!)) ...[
-            const SizedBox(width: 4),
+            const SizedBox(width: 8.0),
             widget.prefix!,
           ],
           // In the middle part, stack the placeholder on top of the main EditableText
@@ -868,7 +868,7 @@ class _TextBoxState extends State<TextBox>
           // First add the explicit suffix if the suffix visibility mode matches.
           if (_showSuffixWidget(text)) ...[
             widget.suffix!,
-            const SizedBox(width: 4.0),
+            const SizedBox(width: 8.0),
           ]
         ]);
       },
