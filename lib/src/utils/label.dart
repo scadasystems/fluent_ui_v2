@@ -14,6 +14,7 @@ class InfoLabel extends StatelessWidget {
     required String label,
     TextStyle? labelStyle,
     this.isHeader = true,
+    this.headerPadding,
   }) : label = TextSpan(text: label, style: labelStyle);
 
   /// Creates an info label.
@@ -22,6 +23,7 @@ class InfoLabel extends StatelessWidget {
     this.child,
     required this.label,
     this.isHeader = true,
+    this.headerPadding,
   });
 
   final InlineSpan label;
@@ -31,6 +33,8 @@ class InfoLabel extends StatelessWidget {
 
   /// Whether to render the [label] above [child] or on its side.
   final bool isHeader;
+
+  final EdgeInsetsGeometry? headerPadding;
 
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder properties) {
@@ -49,12 +53,11 @@ class InfoLabel extends StatelessWidget {
     return Flex(
       direction: isHeader ? Axis.vertical : Axis.horizontal,
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment:
-          isHeader ? CrossAxisAlignment.start : CrossAxisAlignment.center,
+      crossAxisAlignment: isHeader ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: [
         if (isHeader)
           Padding(
-            padding: const EdgeInsetsDirectional.only(bottom: 4.0),
+            padding: headerPadding ?? const EdgeInsetsDirectional.only(bottom: 4.0),
             child: labelWidget,
           ),
         if (child != null) Flexible(child: child!),
