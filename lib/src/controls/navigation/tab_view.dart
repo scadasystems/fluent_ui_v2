@@ -410,174 +410,175 @@ class _TabViewState extends State<TabView> {
 
     final headerFooterTextStyle = theme.typography.bodyLarge ?? const TextStyle();
 
-    Widget tabBar = Column(
-      children: [
-        ScrollConfiguration(
-          behavior: const _TabViewScrollBehavior(),
-          child: Container(
-            margin: const EdgeInsetsDirectional.only(top: 4.5),
-            padding: const EdgeInsetsDirectional.only(start: 8),
-            height: _kTileHeight,
-            width: double.infinity,
-            child: Row(children: [
-              if (widget.header != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 12.0),
-                  child: DefaultTextStyle.merge(
-                    style: headerFooterTextStyle,
-                    child: widget.header!,
-                  ),
+    Widget tabBar = Column(children: [
+      ScrollConfiguration(
+        behavior: const _TabViewScrollBehavior(),
+        child: Container(
+          margin: const EdgeInsetsDirectional.only(top: 4.5),
+          padding: const EdgeInsetsDirectional.only(start: 8),
+          height: _kTileHeight,
+          width: double.infinity,
+          child: Row(children: [
+            if (widget.header != null)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(end: 12.0),
+                child: DefaultTextStyle.merge(
+                  style: headerFooterTextStyle,
+                  child: widget.header!,
                 ),
-              Expanded(
-                child: LayoutBuilder(builder: (context, consts) {
-                  final width = consts.biggest.width;
-                  assert(
-                    width.isFinite,
-                    'You can only create a TabView in a box with defined width',
-                  );
+              ),
+            Expanded(
+              child: LayoutBuilder(builder: (context, consts) {
+                final width = consts.biggest.width;
+                assert(
+                  width.isFinite,
+                  'You can only create a TabView in a box with defined width',
+                );
 
-                  preferredTabWidth = ((width - (widget.showNewButton ? _kButtonWidth : 0)) / widget.tabs.length)
-                      .clamp(widget.minTabWidth, widget.maxTabWidth);
+                preferredTabWidth = ((width - (widget.showNewButton ? _kButtonWidth : 0)) / widget.tabs.length)
+                    .clamp(widget.minTabWidth, widget.maxTabWidth);
 
-                  final Widget listView = Listener(
-                    onPointerSignal: (PointerSignalEvent e) {
-                      if (e is PointerScrollEvent && scrollController.hasClients) {
-                        GestureBinding.instance.pointerSignalResolver.register(e, (PointerSignalEvent event) {
-                          if (e.scrollDelta.dy > 0) {
-                            scrollController.forward(
-                              align: false,
-                              animate: false,
-                            );
-                          } else {
-                            scrollController.backward(
-                              align: false,
-                              animate: false,
-                            );
-                          }
-                        });
-                      }
-                    },
-                    child: Localizations.override(
-                      context: context,
-                      delegates: const [
-                        GlobalMaterialLocalizations.delegate,
-                      ],
-                      child: ReorderableListView.builder(
-                        buildDefaultDragHandles: false,
-                        shrinkWrap: true,
-                        scrollDirection: Axis.horizontal,
-                        scrollController: scrollController,
-                        onReorder: (i, ii) {
-                          widget.onReorder?.call(i, ii);
-                        },
-                        itemCount: widget.tabs.length,
-                        proxyDecorator: (child, index, animation) {
-                          return child;
-                        },
-                        itemBuilder: (context, index) {
-                          return _tabBuilder(context, index, preferredTabWidth);
-                        },
-                      ),
+                final Widget listView = Listener(
+                  onPointerSignal: (PointerSignalEvent e) {
+                    if (e is PointerScrollEvent && scrollController.hasClients) {
+                      GestureBinding.instance.pointerSignalResolver.register(e, (PointerSignalEvent event) {
+                        if (e.scrollDelta.dy > 0) {
+                          scrollController.forward(
+                            align: false,
+                            animate: false,
+                          );
+                        } else {
+                          scrollController.backward(
+                            align: false,
+                            animate: false,
+                          );
+                        }
+                      });
+                    }
+                  },
+                  child: Localizations.override(
+                    context: context,
+                    delegates: const [
+                      GlobalMaterialLocalizations.delegate,
+                    ],
+                    child: ReorderableListView.builder(
+                      buildDefaultDragHandles: false,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
+                      scrollController: scrollController,
+                      onReorder: (i, ii) {
+                        widget.onReorder?.call(i, ii);
+                      },
+                      itemCount: widget.tabs.length,
+                      proxyDecorator: (child, index, animation) {
+                        return child;
+                      },
+                      itemBuilder: (context, index) {
+                        return _tabBuilder(context, index, preferredTabWidth);
+                      },
+                    ),
+                  ),
+                );
+
+                /// Whether the tab bar is scrollable
+                var scrollable =
+                    preferredTabWidth * widget.tabs.length > width - (widget.showNewButton ? _kButtonWidth : 0);
+
+                final showScrollButtons = widget.showScrollButtons && scrollable && scrollController.hasClients;
+
+                Widget backwardButton() {
+                  return Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start: 8.0,
+                      end: 3.0,
+                      bottom: 3.0,
+                    ),
+                    child: _buttonTabBuilder(
+                      context,
+                      const Icon(FluentIcons.caret_left_solid8, size: 8),
+                      scrollController.canBackward
+                          ? () {
+                              if (direction == TextDirection.ltr) {
+                                scrollController.backward(align: false);
+                              } else {
+                                scrollController.forward(align: false);
+                              }
+                            }
+                          : null,
+                      localizations.scrollTabBackwardLabel,
                     ),
                   );
+                }
 
-                  /// Whether the tab bar is scrollable
-                  var scrollable =
-                      preferredTabWidth * widget.tabs.length > width - (widget.showNewButton ? _kButtonWidth : 0);
-
-                  final showScrollButtons = widget.showScrollButtons && scrollable && scrollController.hasClients;
-
-                  Widget backwardButton() {
-                    return Padding(
-                      padding: const EdgeInsetsDirectional.only(
-                        start: 8.0,
-                        end: 3.0,
-                        bottom: 3.0,
-                      ),
-                      child: _buttonTabBuilder(
-                        context,
-                        const Icon(FluentIcons.caret_left_solid8, size: 8),
-                        scrollController.canBackward
-                            ? () {
-                                if (direction == TextDirection.ltr) {
-                                  scrollController.backward(align: false);
-                                } else {
-                                  scrollController.forward(align: false);
-                                }
+                Widget forwardButton() {
+                  return Padding(
+                    padding: const EdgeInsetsDirectional.only(
+                      start: 3.0,
+                      end: 8.0,
+                      bottom: 3.0,
+                    ),
+                    child: _buttonTabBuilder(
+                      context,
+                      const Icon(FluentIcons.caret_right_solid8, size: 8),
+                      scrollController.canForward
+                          ? () {
+                              if (direction == TextDirection.ltr) {
+                                scrollController.forward(align: false);
+                              } else {
+                                scrollController.backward(align: false);
                               }
-                            : null,
-                        localizations.scrollTabBackwardLabel,
-                      ),
-                    );
-                  }
+                            }
+                          : null,
+                      localizations.scrollTabForwardLabel,
+                    ),
+                  );
+                }
 
-                  Widget forwardButton() {
-                    return Padding(
+                return Row(children: [
+                  if (showScrollButtons) direction == TextDirection.ltr ? backwardButton() : forwardButton(),
+                  if (scrollable) Expanded(child: listView) else Flexible(child: listView),
+                  if (showScrollButtons) direction == TextDirection.ltr ? forwardButton() : backwardButton(),
+                  if (widget.showNewButton)
+                    Padding(
                       padding: const EdgeInsetsDirectional.only(
                         start: 3.0,
-                        end: 8.0,
                         bottom: 3.0,
                       ),
                       child: _buttonTabBuilder(
                         context,
-                        const Icon(FluentIcons.caret_right_solid8, size: 8),
-                        scrollController.canForward
-                            ? () {
-                                if (direction == TextDirection.ltr) {
-                                  scrollController.forward(align: false);
-                                } else {
-                                  scrollController.backward(align: false);
-                                }
-                              }
-                            : null,
-                        localizations.scrollTabForwardLabel,
-                      ),
-                    );
-                  }
-
-                  return Row(children: [
-                    if (showScrollButtons) direction == TextDirection.ltr ? backwardButton() : forwardButton(),
-                    if (scrollable) Expanded(child: listView) else Flexible(child: listView),
-                    if (showScrollButtons) direction == TextDirection.ltr ? forwardButton() : backwardButton(),
-                    if (widget.showNewButton)
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(
-                          start: 3.0,
-                          bottom: 3.0,
-                        ),
-                        child: _buttonTabBuilder(
-                          context,
-                          widget.addIconBuilder?.call(
-                                Icon(widget.addIconData, size: 12.0),
-                              ) ??
+                        widget.addIconBuilder?.call(
                               Icon(widget.addIconData, size: 12.0),
-                          widget.onNewPressed!,
-                          localizations.newTabLabel,
-                        ),
+                            ) ??
+                            Icon(widget.addIconData, size: 12.0),
+                        widget.onNewPressed!,
+                        localizations.newTabLabel,
                       ),
-                  ]);
-                }),
-              ),
-              if (widget.footer != null)
-                Padding(
-                  padding: const EdgeInsetsDirectional.only(start: 12.0),
-                  child: DefaultTextStyle.merge(
-                    style: headerFooterTextStyle,
-                    child: widget.footer!,
-                  ),
+                    ),
+                ]);
+              }),
+            ),
+            if (widget.footer != null)
+              Padding(
+                padding: const EdgeInsetsDirectional.only(start: 12.0),
+                child: DefaultTextStyle.merge(
+                  style: headerFooterTextStyle,
+                  child: widget.footer!,
                 ),
-            ]),
-          ),
+              ),
+          ]),
         ),
-        if (widget.tabs.isNotEmpty)
-          Expanded(
+      ),
+      if (widget.tabs.isNotEmpty)
+        Expanded(
+          child: Focus(
+            autofocus: true,
             child: _TabBody(
               index: widget.currentIndex,
               tabs: widget.tabs,
             ),
           ),
-      ],
-    );
+        ),
+    ]);
     if (widget.shortcutsEnabled) {
       void onClosePressed() {
         close(widget.currentIndex);
@@ -591,57 +592,59 @@ class _TabViewState extends State<TabView> {
         meta = true;
       }
 
-      return CallbackShortcuts(
-        bindings: {
-          SingleActivator(
-            LogicalKeyboardKey.f4,
-            control: ctrl,
-            meta: meta,
-          ): onClosePressed,
-          SingleActivator(
-            LogicalKeyboardKey.keyW,
-            control: ctrl,
-            meta: meta,
-          ): onClosePressed,
-          SingleActivator(
-            LogicalKeyboardKey.keyT,
-            control: ctrl,
-            meta: meta,
-          ): () => widget.onNewPressed?.call(),
-          ...Map.fromIterable(
-            List<int>.generate(9, (index) => index),
-            key: (i) {
-              final digits = [
-                LogicalKeyboardKey.digit1,
-                LogicalKeyboardKey.digit2,
-                LogicalKeyboardKey.digit3,
-                LogicalKeyboardKey.digit4,
-                LogicalKeyboardKey.digit5,
-                LogicalKeyboardKey.digit6,
-                LogicalKeyboardKey.digit7,
-                LogicalKeyboardKey.digit8,
-                LogicalKeyboardKey.digit9,
-              ];
-              return SingleActivator(digits[i], control: ctrl, meta: meta);
-            },
-            value: (index) {
-              return () {
-                // If it's the last, move to the last tab
-                if (index == 8) {
-                  widget.onChanged?.call(widget.tabs.length - 1);
-                } else {
-                  if (widget.tabs.length - 1 >= index) {
-                    widget.onChanged?.call(index);
+      return FocusScope(
+        autofocus: true,
+        child: CallbackShortcuts(
+          bindings: {
+            SingleActivator(
+              LogicalKeyboardKey.f4,
+              control: ctrl,
+              meta: meta,
+            ): onClosePressed,
+            SingleActivator(
+              LogicalKeyboardKey.keyW,
+              control: ctrl,
+              meta: meta,
+            ): onClosePressed,
+            SingleActivator(
+              LogicalKeyboardKey.keyT,
+              control: ctrl,
+              meta: meta,
+            ): () => widget.onNewPressed?.call(),
+            ...Map.fromIterable(
+              List<int>.generate(9, (index) => index),
+              key: (i) {
+                final digits = [
+                  LogicalKeyboardKey.digit1,
+                  LogicalKeyboardKey.digit2,
+                  LogicalKeyboardKey.digit3,
+                  LogicalKeyboardKey.digit4,
+                  LogicalKeyboardKey.digit5,
+                  LogicalKeyboardKey.digit6,
+                  LogicalKeyboardKey.digit7,
+                  LogicalKeyboardKey.digit8,
+                  LogicalKeyboardKey.digit9,
+                ];
+                return SingleActivator(digits[i], control: ctrl, meta: meta);
+              },
+              value: (index) {
+                return () {
+                  // If it's the last, move to the last tab
+                  if (index == 8) {
+                    widget.onChanged?.call(widget.tabs.length - 1);
+                  } else {
+                    if (widget.tabs.length - 1 >= index) {
+                      widget.onChanged?.call(index);
+                    }
                   }
-                }
-              };
-            },
-          ),
-        },
-        child: tabBar,
+                };
+              },
+            ),
+          },
+          child: tabBar,
+        ),
       );
     }
-
     return tabBar;
   }
 }
@@ -660,7 +663,7 @@ class __TabBodyState extends State<_TabBody> {
   final _pageKey = GlobalKey<State<PageView>>();
   PageController? _pageController;
 
-  PageController? get pageController => _pageController;
+  PageController get pageController => _pageController!;
 
   @override
   void didChangeDependencies() {
@@ -671,9 +674,9 @@ class __TabBodyState extends State<_TabBody> {
   @override
   void didUpdateWidget(_TabBody oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_pageController?.hasClients == true) {
-      if (oldWidget.index != widget.index || pageController?.page != widget.index) {
-        pageController?.jumpToPage(widget.index);
+    if (pageController.hasClients) {
+      if (oldWidget.index != widget.index || pageController.page != widget.index) {
+        pageController.jumpToPage(widget.index);
       }
     }
   }
