@@ -410,172 +410,172 @@ class _TabViewState extends State<TabView> {
 
     final headerFooterTextStyle = theme.typography.bodyLarge ?? const TextStyle();
 
-    Widget tabBar = Column(children: [
-      ScrollConfiguration(
-        behavior: const _TabViewScrollBehavior(),
-        child: Container(
-          margin: const EdgeInsetsDirectional.only(top: 4.5),
-          padding: const EdgeInsetsDirectional.only(start: 8),
-          height: _kTileHeight,
-          width: double.infinity,
-          child: Row(children: [
-            if (widget.header != null)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(end: 12.0),
-                child: DefaultTextStyle.merge(
-                  style: headerFooterTextStyle,
-                  child: widget.header!,
-                ),
-              ),
-            Expanded(
-              child: LayoutBuilder(builder: (context, consts) {
-                final width = consts.biggest.width;
-                assert(
-                  width.isFinite,
-                  'You can only create a TabView in a box with defined width',
-                );
-
-                preferredTabWidth = ((width - (widget.showNewButton ? _kButtonWidth : 0)) / widget.tabs.length)
-                    .clamp(widget.minTabWidth, widget.maxTabWidth);
-
-                final Widget listView = Listener(
-                  onPointerSignal: (PointerSignalEvent e) {
-                    if (e is PointerScrollEvent && scrollController.hasClients) {
-                      GestureBinding.instance.pointerSignalResolver.register(e, (PointerSignalEvent event) {
-                        if (e.scrollDelta.dy > 0) {
-                          scrollController.forward(
-                            align: false,
-                            animate: false,
-                          );
-                        } else {
-                          scrollController.backward(
-                            align: false,
-                            animate: false,
-                          );
-                        }
-                      });
-                    }
-                  },
-                  child: Localizations.override(
-                    context: context,
-                    delegates: const [
-                      GlobalMaterialLocalizations.delegate,
-                    ],
-                    child: ReorderableListView.builder(
-                      buildDefaultDragHandles: false,
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      scrollController: scrollController,
-                      onReorder: (i, ii) {
-                        widget.onReorder?.call(i, ii);
-                      },
-                      itemCount: widget.tabs.length,
-                      proxyDecorator: (child, index, animation) {
-                        return child;
-                      },
-                      itemBuilder: (context, index) {
-                        return _tabBuilder(context, index, preferredTabWidth);
-                      },
-                    ),
+    Widget tabBar = Column(
+      children: [
+        ScrollConfiguration(
+          behavior: const _TabViewScrollBehavior(),
+          child: Container(
+            margin: const EdgeInsetsDirectional.only(top: 4.5),
+            padding: const EdgeInsetsDirectional.only(start: 8),
+            height: _kTileHeight,
+            width: double.infinity,
+            child: Row(children: [
+              if (widget.header != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(end: 12.0),
+                  child: DefaultTextStyle.merge(
+                    style: headerFooterTextStyle,
+                    child: widget.header!,
                   ),
-                );
+                ),
+              Expanded(
+                child: LayoutBuilder(builder: (context, consts) {
+                  final width = consts.biggest.width;
+                  assert(
+                    width.isFinite,
+                    'You can only create a TabView in a box with defined width',
+                  );
 
-                /// Whether the tab bar is scrollable
-                var scrollable =
-                    preferredTabWidth * widget.tabs.length > width - (widget.showNewButton ? _kButtonWidth : 0);
+                  preferredTabWidth = ((width - (widget.showNewButton ? _kButtonWidth : 0)) / widget.tabs.length)
+                      .clamp(widget.minTabWidth, widget.maxTabWidth);
 
-                final showScrollButtons = widget.showScrollButtons && scrollable && scrollController.hasClients;
-
-                Widget backwardButton() {
-                  return Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: 8.0,
-                      end: 3.0,
-                      bottom: 3.0,
-                    ),
-                    child: _buttonTabBuilder(
-                      context,
-                      const Icon(FluentIcons.caret_left_solid8, size: 8),
-                      scrollController.canBackward
-                          ? () {
-                              if (direction == TextDirection.ltr) {
-                                scrollController.backward(align: false);
-                              } else {
-                                scrollController.forward(align: false);
-                              }
-                            }
-                          : null,
-                      localizations.scrollTabBackwardLabel,
+                  final Widget listView = Listener(
+                    onPointerSignal: (PointerSignalEvent e) {
+                      if (e is PointerScrollEvent && scrollController.hasClients) {
+                        GestureBinding.instance.pointerSignalResolver.register(e, (PointerSignalEvent event) {
+                          if (e.scrollDelta.dy > 0) {
+                            scrollController.forward(
+                              align: false,
+                              animate: false,
+                            );
+                          } else {
+                            scrollController.backward(
+                              align: false,
+                              animate: false,
+                            );
+                          }
+                        });
+                      }
+                    },
+                    child: Localizations.override(
+                      context: context,
+                      delegates: const [
+                        GlobalMaterialLocalizations.delegate,
+                      ],
+                      child: ReorderableListView.builder(
+                        buildDefaultDragHandles: false,
+                        shrinkWrap: true,
+                        scrollDirection: Axis.horizontal,
+                        scrollController: scrollController,
+                        onReorder: (i, ii) {
+                          widget.onReorder?.call(i, ii);
+                        },
+                        itemCount: widget.tabs.length,
+                        proxyDecorator: (child, index, animation) {
+                          return child;
+                        },
+                        itemBuilder: (context, index) {
+                          return _tabBuilder(context, index, preferredTabWidth);
+                        },
+                      ),
                     ),
                   );
-                }
 
-                Widget forwardButton() {
-                  return Padding(
-                    padding: const EdgeInsetsDirectional.only(
-                      start: 3.0,
-                      end: 8.0,
-                      bottom: 3.0,
-                    ),
-                    child: _buttonTabBuilder(
-                      context,
-                      const Icon(FluentIcons.caret_right_solid8, size: 8),
-                      scrollController.canForward
-                          ? () {
-                              if (direction == TextDirection.ltr) {
-                                scrollController.forward(align: false);
-                              } else {
-                                scrollController.backward(align: false);
-                              }
-                            }
-                          : null,
-                      localizations.scrollTabForwardLabel,
-                    ),
-                  );
-                }
+                  /// Whether the tab bar is scrollable
+                  var scrollable =
+                      preferredTabWidth * widget.tabs.length > width - (widget.showNewButton ? _kButtonWidth : 0);
 
-                return Row(children: [
-                  if (showScrollButtons) direction == TextDirection.ltr ? backwardButton() : forwardButton(),
-                  if (scrollable) Expanded(child: listView) else Flexible(child: listView),
-                  if (showScrollButtons) direction == TextDirection.ltr ? forwardButton() : backwardButton(),
-                  if (widget.showNewButton)
-                    Padding(
+                  final showScrollButtons = widget.showScrollButtons && scrollable && scrollController.hasClients;
+
+                  Widget backwardButton() {
+                    return Padding(
                       padding: const EdgeInsetsDirectional.only(
-                        start: 3.0,
+                        start: 8.0,
+                        end: 3.0,
                         bottom: 3.0,
                       ),
                       child: _buttonTabBuilder(
                         context,
-                        widget.addIconBuilder?.call(
-                              Icon(widget.addIconData, size: 12.0),
-                            ) ??
-                            Icon(widget.addIconData, size: 12.0),
-                        widget.onNewPressed!,
-                        localizations.newTabLabel,
+                        const Icon(FluentIcons.caret_left_solid8, size: 8),
+                        scrollController.canBackward
+                            ? () {
+                                if (direction == TextDirection.ltr) {
+                                  scrollController.backward(align: false);
+                                } else {
+                                  scrollController.forward(align: false);
+                                }
+                              }
+                            : null,
+                        localizations.scrollTabBackwardLabel,
                       ),
-                    ),
-                ]);
-              }),
-            ),
-            if (widget.footer != null)
-              Padding(
-                padding: const EdgeInsetsDirectional.only(start: 12.0),
-                child: DefaultTextStyle.merge(
-                  style: headerFooterTextStyle,
-                  child: widget.footer!,
-                ),
+                    );
+                  }
+
+                  Widget forwardButton() {
+                    return Padding(
+                      padding: const EdgeInsetsDirectional.only(
+                        start: 3.0,
+                        end: 8.0,
+                        bottom: 3.0,
+                      ),
+                      child: _buttonTabBuilder(
+                        context,
+                        const Icon(FluentIcons.caret_right_solid8, size: 8),
+                        scrollController.canForward
+                            ? () {
+                                if (direction == TextDirection.ltr) {
+                                  scrollController.forward(align: false);
+                                } else {
+                                  scrollController.backward(align: false);
+                                }
+                              }
+                            : null,
+                        localizations.scrollTabForwardLabel,
+                      ),
+                    );
+                  }
+
+                  return Row(children: [
+                    if (showScrollButtons) direction == TextDirection.ltr ? backwardButton() : forwardButton(),
+                    if (scrollable) Expanded(child: listView) else Flexible(child: listView),
+                    if (showScrollButtons) direction == TextDirection.ltr ? forwardButton() : backwardButton(),
+                    if (widget.showNewButton)
+                      Padding(
+                        padding: const EdgeInsetsDirectional.only(
+                          start: 3.0,
+                          bottom: 3.0,
+                        ),
+                        child: _buttonTabBuilder(
+                          context,
+                          widget.addIconBuilder?.call(
+                                Icon(widget.addIconData, size: 12.0),
+                              ) ??
+                              Icon(widget.addIconData, size: 12.0),
+                          widget.onNewPressed!,
+                          localizations.newTabLabel,
+                        ),
+                      ),
+                  ]);
+                }),
               ),
-          ]),
+              if (widget.footer != null)
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 12.0),
+                  child: DefaultTextStyle.merge(
+                    style: headerFooterTextStyle,
+                    child: widget.footer!,
+                  ),
+                ),
+            ]),
+          ),
         ),
-      ),
-      if (widget.tabs.isNotEmpty)
-        Expanded(
-          child: _TabBody(
+        if (widget.tabs.isNotEmpty)
+          _TabBody(
             index: widget.currentIndex,
             tabs: widget.tabs,
           ),
-        ),
-    ]);
+      ],
+    );
     if (widget.shortcutsEnabled) {
       void onClosePressed() {
         close(widget.currentIndex);
