@@ -666,34 +666,22 @@ class __TabBodyState extends State<_TabBody> {
   final _pageKey = GlobalKey<State<PageView>>();
   PageController? _pageController;
 
-  PageController get pageController => _pageController!;
-
-  @override
-  void initState() {
-    super.initState();
-    _pageController ??= PageController(initialPage: widget.index);
-
-    // if (pageController.hasClients) {
-    //   if (oldWidget.index != widget.index || pageController.page != widget.index) {
-    //     pageController.jumpToPage(widget.index);
-    //   }
-    // }
-  }
+  PageController? get pageController => _pageController;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // _pageController ??= PageController(initialPage: widget.index);
+    _pageController ??= PageController(initialPage: widget.index);
   }
 
   @override
   void didUpdateWidget(_TabBody oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // if (pageController.hasClients) {
-    //   if (oldWidget.index != widget.index || pageController.page != widget.index) {
-    //     pageController.jumpToPage(widget.index);
-    //   }
-    // }
+    if (_pageController?.hasClients == true) {
+      if (oldWidget.index != widget.index || pageController?.page != widget.index) {
+        pageController?.jumpToPage(widget.index);
+      }
+    }
   }
 
   @override
