@@ -404,15 +404,15 @@ class MenuFlyoutItem extends MenuFlyoutItemBase {
           data: const IconThemeData(size: 12.0),
           child: trailing ?? const SizedBox.shrink(),
         ),
-        onPressed: onPressed == null
-            ? null
-            : () {
-                if (enableAutoPop) {
-                  Flyout.of(context).close();
-                  // Navigator.of(context).maybePop();
-                }
-                onPressed?.call();
-              },
+        // onPressed: onPressed == null
+        //     ? null
+        //     : () {
+        //         if (enableAutoPop) {
+        //           Flyout.of(context).close();
+        //         }
+        //         onPressed?.call();
+        //       },
+        onPressed: onPressed,
         onLongPressed: onLongPressed,
       ),
     );
