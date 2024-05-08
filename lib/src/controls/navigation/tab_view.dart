@@ -570,9 +570,14 @@ class _TabViewState extends State<TabView> {
           ),
         ),
         if (widget.tabs.isNotEmpty)
-          _TabBody(
-            index: widget.currentIndex,
-            tabs: widget.tabs,
+          Expanded(
+            child: Focus(
+              autofocus: true,
+              child: _TabBody(
+                index: widget.currentIndex,
+                tabs: widget.tabs,
+              ),
+            ),
           ),
       ],
     );
@@ -642,6 +647,7 @@ class _TabViewState extends State<TabView> {
         ),
       );
     }
+
     return tabBar;
   }
 }
