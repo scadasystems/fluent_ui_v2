@@ -571,12 +571,9 @@ class _TabViewState extends State<TabView> {
         ),
         if (widget.tabs.isNotEmpty)
           Expanded(
-            child: Focus(
-              autofocus: true,
-              child: _TabBody(
-                index: widget.currentIndex,
-                tabs: widget.tabs,
-              ),
+            child: _TabBody(
+              index: widget.currentIndex,
+              tabs: widget.tabs,
             ),
           ),
       ],
@@ -594,57 +591,54 @@ class _TabViewState extends State<TabView> {
         meta = true;
       }
 
-      return FocusScope(
-        autofocus: true,
-        child: CallbackShortcuts(
-          bindings: {
-            SingleActivator(
-              LogicalKeyboardKey.f4,
-              control: ctrl,
-              meta: meta,
-            ): onClosePressed,
-            SingleActivator(
-              LogicalKeyboardKey.keyW,
-              control: ctrl,
-              meta: meta,
-            ): onClosePressed,
-            SingleActivator(
-              LogicalKeyboardKey.keyT,
-              control: ctrl,
-              meta: meta,
-            ): () => widget.onNewPressed?.call(),
-            ...Map.fromIterable(
-              List<int>.generate(9, (index) => index),
-              key: (i) {
-                final digits = [
-                  LogicalKeyboardKey.digit1,
-                  LogicalKeyboardKey.digit2,
-                  LogicalKeyboardKey.digit3,
-                  LogicalKeyboardKey.digit4,
-                  LogicalKeyboardKey.digit5,
-                  LogicalKeyboardKey.digit6,
-                  LogicalKeyboardKey.digit7,
-                  LogicalKeyboardKey.digit8,
-                  LogicalKeyboardKey.digit9,
-                ];
-                return SingleActivator(digits[i], control: ctrl, meta: meta);
-              },
-              value: (index) {
-                return () {
-                  // If it's the last, move to the last tab
-                  if (index == 8) {
-                    widget.onChanged?.call(widget.tabs.length - 1);
-                  } else {
-                    if (widget.tabs.length - 1 >= index) {
-                      widget.onChanged?.call(index);
-                    }
+      return CallbackShortcuts(
+        bindings: {
+          SingleActivator(
+            LogicalKeyboardKey.f4,
+            control: ctrl,
+            meta: meta,
+          ): onClosePressed,
+          SingleActivator(
+            LogicalKeyboardKey.keyW,
+            control: ctrl,
+            meta: meta,
+          ): onClosePressed,
+          SingleActivator(
+            LogicalKeyboardKey.keyT,
+            control: ctrl,
+            meta: meta,
+          ): () => widget.onNewPressed?.call(),
+          ...Map.fromIterable(
+            List<int>.generate(9, (index) => index),
+            key: (i) {
+              final digits = [
+                LogicalKeyboardKey.digit1,
+                LogicalKeyboardKey.digit2,
+                LogicalKeyboardKey.digit3,
+                LogicalKeyboardKey.digit4,
+                LogicalKeyboardKey.digit5,
+                LogicalKeyboardKey.digit6,
+                LogicalKeyboardKey.digit7,
+                LogicalKeyboardKey.digit8,
+                LogicalKeyboardKey.digit9,
+              ];
+              return SingleActivator(digits[i], control: ctrl, meta: meta);
+            },
+            value: (index) {
+              return () {
+                // If it's the last, move to the last tab
+                if (index == 8) {
+                  widget.onChanged?.call(widget.tabs.length - 1);
+                } else {
+                  if (widget.tabs.length - 1 >= index) {
+                    widget.onChanged?.call(index);
                   }
-                };
-              },
-            ),
-          },
-          child: tabBar,
-        ),
+                }
+              };
+            },
+          ),
+        },
+        child: tabBar,
       );
     }
 
