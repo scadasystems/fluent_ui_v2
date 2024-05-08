@@ -570,12 +570,9 @@ class _TabViewState extends State<TabView> {
       ),
       if (widget.tabs.isNotEmpty)
         Expanded(
-          child: Focus(
-            // autofocus: true,
-            child: _TabBody(
-              index: widget.currentIndex,
-              tabs: widget.tabs,
-            ),
+          child: _TabBody(
+            index: widget.currentIndex,
+            tabs: widget.tabs,
           ),
         ),
     ]);
