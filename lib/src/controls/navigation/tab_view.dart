@@ -662,7 +662,6 @@ class _TabBody extends StatefulWidget {
 class __TabBodyState extends State<_TabBody> {
   final _pageKey = GlobalKey<State<PageView>>();
   PageController? _pageController;
-
   PageController? get pageController => _pageController;
 
   @override
@@ -674,10 +673,15 @@ class __TabBodyState extends State<_TabBody> {
   @override
   void didUpdateWidget(_TabBody oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (pageController?.hasClients ?? false) {
-      if (oldWidget.index != widget.index || pageController?.page != widget.index) {
-        pageController?.jumpToPage(widget.index);
+
+    try {
+      if (pageController?.hasClients ?? false) {
+        if (oldWidget.index != widget.index || pageController?.page != widget.index) {
+          pageController?.jumpToPage(widget.index);
+        }
       }
+    } catch (e, stackTrace) {
+      debugPrintStack(stackTrace: stackTrace, label: '$e');
     }
   }
 
