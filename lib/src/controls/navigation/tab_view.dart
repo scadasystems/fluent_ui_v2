@@ -653,7 +653,10 @@ class _TabBody extends StatefulWidget {
   final int index;
   final List<Tab> tabs;
 
-  const _TabBody({required this.index, required this.tabs});
+  const _TabBody({
+    this.index = 0,
+    this.tabs = const [],
+  });
 
   @override
   State<_TabBody> createState() => __TabBodyState();
@@ -680,9 +683,7 @@ class __TabBodyState extends State<_TabBody> {
           pageController?.jumpToPage(widget.index);
         }
       }
-    } catch (e, stackTrace) {
-      debugPrintStack(stackTrace: stackTrace, label: '$e');
-    }
+    } catch (_) {}
   }
 
   @override
