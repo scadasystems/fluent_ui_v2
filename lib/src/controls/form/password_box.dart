@@ -1,4 +1,5 @@
 import 'package:fluent_ui/fluent_ui.dart';
+import 'package:flutter/services.dart';
 
 enum PasswordRevealMode {
   /// The password reveal button is visible. The password is not obscured while
@@ -223,23 +224,18 @@ class _PasswordBoxState extends State<PasswordBox> {
   bool textCanPeek = false;
 
   TextEditingController? _internalController;
-  TextEditingController? get controller =>
-      widget.controller ?? _internalController;
+  TextEditingController? get controller => widget.controller ?? _internalController;
 
   FocusNode? _internalNode;
   FocusNode? get focusNode => widget.focusNode ?? _internalNode;
 
   bool get _isVisible =>
       widget.revealMode == PasswordRevealMode.visible ||
-      ((widget.revealMode == PasswordRevealMode.peek ||
-              widget.revealMode == PasswordRevealMode.peekAlways) &&
-          peek);
+      ((widget.revealMode == PasswordRevealMode.peek || widget.revealMode == PasswordRevealMode.peekAlways) && peek);
 
   bool get _canPeek =>
       (widget.revealMode == PasswordRevealMode.peekAlways && textCanPeek) ||
-      (widget.revealMode == PasswordRevealMode.peek &&
-          focusCanPeek &&
-          textCanPeek);
+      (widget.revealMode == PasswordRevealMode.peek && focusCanPeek && textCanPeek);
 
   @override
   void initState() {
@@ -290,8 +286,7 @@ class _PasswordBoxState extends State<PasswordBox> {
       focusNode!.addListener(_handleFocusChange);
     }
 
-    if (oldWidget.revealMode == PasswordRevealMode.peekAlways &&
-        widget.revealMode == PasswordRevealMode.peek) {
+    if (oldWidget.revealMode == PasswordRevealMode.peekAlways && widget.revealMode == PasswordRevealMode.peek) {
       // if the mode change, we consider that the first focus is gone.
       focusCanPeek = false;
     }
@@ -455,9 +450,25 @@ class PasswordFormBox extends ControllableFormBox {
     ValueChanged<String>? onFieldSubmitted,
     Color? highlightColor,
     Color? errorHighlightColor,
+    TextStyle? errorTextStyle,
     String? placeholder,
     TextStyle? placeholderStyle,
     Widget? leadingIcon,
+    int? maxLines = 1,
+    TextAlign? textAlign,
+    TextStyle? style,
+    TextInputType? keyboardType,
+    BoxDecoration? decoration,
+    Color? unfocusedColor,
+    Widget? prefix,
+    OverlayVisibilityMode prefixMode = OverlayVisibilityMode.always,
+    Widget? suffix,
+    OverlayVisibilityMode suffixMode = OverlayVisibilityMode.always,
+    EdgeInsetsGeometry padding = kTextBoxPadding,
+    List<TextInputFormatter>? inputFormatters,
+    ValueChanged<String>? onChanged,
+    GestureTapCallback? onTap,
+    TapRegionCallback? onTapOutside,
   }) : super(builder: (FormFieldState<String> field) {
           assert(debugCheckHasFluentTheme(field.context));
           final theme = FluentTheme.of(field.context);
@@ -469,7 +480,12 @@ class PasswordFormBox extends ControllableFormBox {
             bucket: field.bucket,
             child: FormRow(
               padding: EdgeInsets.zero,
-              error: (field.errorText == null) ? null : Text(field.errorText!),
+              error: (field.errorText == null)
+                  ? null
+                  : Text(
+                      field.errorText!,
+                      style: errorTextStyle,
+                    ),
               child: PasswordBox(
                 revealMode: revealMode,
                 focusNode: focusNode,
@@ -488,8 +504,7 @@ class PasswordFormBox extends ControllableFormBox {
                 onChanged: onChangedHandler,
                 highlightColor: (field.errorText == null)
                     ? highlightColor
-                    : errorHighlightColor ??
-                        Colors.red.defaultBrushFor(theme.brightness),
+                    : errorHighlightColor ?? Colors.red.defaultBrushFor(theme.brightness),
                 placeholder: placeholder,
                 placeholderStyle: placeholderStyle,
                 leadingIcon: leadingIcon,
