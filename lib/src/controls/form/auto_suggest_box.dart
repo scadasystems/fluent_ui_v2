@@ -409,11 +409,9 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
   late TextEditingController _controller;
   final FocusScopeNode _overlayNode = FocusScopeNode();
   final _focusStreamController = StreamController<int>.broadcast();
-  final _dynamicItemsController =
-      StreamController<List<AutoSuggestBoxItem<T>>>.broadcast();
+  final _dynamicItemsController = StreamController<List<AutoSuggestBoxItem<T>>>.broadcast();
 
-  AutoSuggestBoxSorter<T> get sorter =>
-      widget.sorter ?? widget.defaultItemSorter;
+  AutoSuggestBoxSorter<T> get sorter => widget.sorter ?? widget.defaultItemSorter;
 
   /// The size of the text box.
   ///
@@ -537,8 +535,7 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
         ancestor: overlayState.context.findRenderObject(),
       );
 
-      final screenHeight = MediaQuery.sizeOf(context).height -
-          MediaQuery.viewPaddingOf(context).bottom;
+      final screenHeight = MediaQuery.sizeOf(context).height - MediaQuery.viewPaddingOf(context).bottom;
       final overlayY = globalOffset.dy + box.size.height;
       final maxHeight = (screenHeight - overlayY).clamp(
         0.0,
@@ -580,8 +577,7 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
                   // After selected, the overlay is dismissed and the text box is
                   // unfocused
                   dismissOverlay();
-                  _focusNode.unfocus(
-                      disposition: UnfocusDisposition.previouslyFocusedChild);
+                  _focusNode.unfocus(disposition: UnfocusDisposition.previouslyFocusedChild);
                 },
                 noResultsFoundBuilder: widget.noResultsFoundBuilder,
               ),
@@ -640,8 +636,7 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
     item.onSelected?.call();
 
     _controller.text = item.label;
-    widget.onChanged
-        ?.call(_controller.text, TextChangedReason.suggestionChosen);
+    widget.onChanged?.call(_controller.text, TextChangedReason.suggestionChosen);
   }
 
   /// Whether a [TextFormBox] is used instead of a [TextBox]
@@ -677,8 +672,7 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
       child: Focus(
         skipTraversal: true,
         onKeyEvent: (node, event) {
-          if (!(event is KeyDownEvent || event is KeyRepeatEvent) ||
-              !widget.enableKeyboardControls) {
+          if (!(event is KeyDownEvent || event is KeyRepeatEvent) || !widget.enableKeyboardControls) {
             return KeyEventResult.ignored;
           }
 
@@ -704,8 +698,7 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
 
           if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
             // if nothing is selected, select the first
-            if (currentlySelectedIndex == -1 ||
-                currentlySelectedIndex == lastIndex) {
+            if (currentlySelectedIndex == -1 || currentlySelectedIndex == lastIndex) {
               select(0);
             } else if (currentlySelectedIndex >= 0) {
               select(currentlySelectedIndex + 1);
@@ -832,8 +825,7 @@ class _AutoSuggestBoxOverlay<T> extends StatefulWidget {
   final WidgetBuilder? noResultsFoundBuilder;
 
   @override
-  State<_AutoSuggestBoxOverlay<T>> createState() =>
-      _AutoSuggestBoxOverlayState<T>();
+  State<_AutoSuggestBoxOverlay<T>> createState() => _AutoSuggestBoxOverlayState<T>();
 }
 
 class _AutoSuggestBoxOverlayState<T> extends State<_AutoSuggestBoxOverlay<T>> {
@@ -967,12 +959,10 @@ class _AutoSuggestBoxOverlayTile extends StatefulWidget {
   final String? semanticLabel;
 
   @override
-  State<_AutoSuggestBoxOverlayTile> createState() =>
-      __AutoSuggestBoxOverlayTileState();
+  State<_AutoSuggestBoxOverlayTile> createState() => __AutoSuggestBoxOverlayTileState();
 }
 
-class __AutoSuggestBoxOverlayTileState extends State<_AutoSuggestBoxOverlayTile>
-    with SingleTickerProviderStateMixin {
+class __AutoSuggestBoxOverlayTileState extends State<_AutoSuggestBoxOverlayTile> with SingleTickerProviderStateMixin {
   late AnimationController controller;
 
   @override
