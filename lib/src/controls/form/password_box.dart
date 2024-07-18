@@ -77,10 +77,19 @@ class PasswordBox extends StatefulWidget {
   /// {@macro flutter.widgets.Focus.focusNode}
   final FocusNode? focusNode;
 
+  /// The suffix icon
+  final Widget? suffixIcon;
+
+  /// The spacing between the text box and the [suffixIcon]
+  final double? suffixSpacing;
+
   /// A widget displayed at the start of the text box
   ///
   /// Usually an [IconButton] or [Icon]
-  final Widget? leadingIcon;
+  final Widget? prefix;
+
+  /// The spacing between the [prefix] and the text box
+  final double? prefixSpacing;
 
   /// The text shown when the text box is empty
   ///
@@ -191,7 +200,10 @@ class PasswordBox extends StatefulWidget {
     this.placeholder,
     this.revealMode = PasswordRevealMode.peek,
     this.autofocus = false,
-    this.leadingIcon,
+    this.suffixIcon,
+    this.suffixSpacing,
+    this.prefix,
+    this.prefixSpacing,
     this.placeholderStyle,
     this.cursorWidth = 1.5,
     this.cursorRadius = const Radius.circular(2.0),
@@ -337,31 +349,21 @@ class _PasswordBoxState extends State<PasswordBox> {
       suffix: _canPeek
           ? SmallIconButton(
               child: IconButton(
-                icon: const Icon(FluentIcons.red_eye),
+                icon: widget.suffixIcon ?? const Icon(FluentIcons.red_eye),
                 // todo: half eye icon, like WinUI3 ?
                 onPressed: null,
-                onTapDown: widget.enabled
-                    ? () {
-                        setState(() {
-                          peek = true;
-                        });
-                      }
-                    : null,
-                onTapUp: widget.enabled
-                    ? () {
-                        setState(() {
-                          peek = false;
-                        });
-                      }
-                    : null,
+                onTapDown: widget.enabled ? () => setState(() => peek = true) : null,
+                onTapUp: widget.enabled ? () => setState(() => peek = false) : null,
               ),
             )
           : null,
+      suffixSpacing: widget.suffixSpacing,
       onEditingComplete: widget.onEditingComplete,
       onSubmitted: widget.onSubmitted,
       onChanged: widget.onChanged,
       autofocus: widget.autofocus,
-      prefix: widget.leadingIcon,
+      prefix: widget.prefix,
+      prefixSpacing: widget.prefixSpacing,
       cursorWidth: widget.cursorWidth,
       cursorRadius: widget.cursorRadius,
       cursorHeight: widget.cursorHeight,
@@ -453,16 +455,17 @@ class PasswordFormBox extends ControllableFormBox {
     TextStyle? errorTextStyle,
     String? placeholder,
     TextStyle? placeholderStyle,
-    Widget? leadingIcon,
+    Widget? suffixIcon,
+    double? suffixSpacing,
+    Widget? prefix,
+    double? prefixSpacing,
     int? maxLines = 1,
     TextAlign? textAlign,
     TextStyle? style,
     TextInputType? keyboardType,
     BoxDecoration? decoration,
     Color? unfocusedColor,
-    Widget? prefix,
     OverlayVisibilityMode prefixMode = OverlayVisibilityMode.always,
-    Widget? suffix,
     OverlayVisibilityMode suffixMode = OverlayVisibilityMode.always,
     EdgeInsetsGeometry padding = kTextBoxPadding,
     List<TextInputFormatter>? inputFormatters,
@@ -507,7 +510,11 @@ class PasswordFormBox extends ControllableFormBox {
                     : errorHighlightColor ?? Colors.red.defaultBrushFor(theme.brightness),
                 placeholder: placeholder,
                 placeholderStyle: placeholderStyle,
-                leadingIcon: leadingIcon,
+                suffixIcon: suffixIcon,
+                suffixSpacing: suffixSpacing,
+                prefix: prefix,
+                prefixSpacing: prefixSpacing,
+                padding: padding,
               ),
             ),
           );

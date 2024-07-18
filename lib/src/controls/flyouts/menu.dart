@@ -123,6 +123,7 @@ class _MenuFlyoutState extends State<MenuFlyout> {
 
     final flyoutMenuItems = widget.items.whereType<MenuFlyoutItemBase>().toList();
     final textWidgets = _findTextWidgets(flyoutMenuItems);
+
     final textWidth = _findLongestTextWidth(textWidgets);
 
     if (!mounted) return;
@@ -139,6 +140,7 @@ class _MenuFlyoutState extends State<MenuFlyout> {
     for (var item in items) {
       if (item is MenuFlyoutItem) {
         item = item;
+
         if (item.text is Text) {
           textWidgets.add(item.text as Text);
         }
@@ -586,7 +588,7 @@ class _MenuFlyoutSubItemState extends State<_MenuFlyoutSubItem> with SingleTicke
       return MouseRegion(
         onEnter: (event) {
           showTimer = Timer(widget.item.showHoverDelay, () {
-            show(menuInfo);
+            if (mounted) show(menuInfo);
           });
         },
         onExit: (event) {

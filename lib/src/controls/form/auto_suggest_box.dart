@@ -137,6 +137,7 @@ class AutoSuggestBox<T> extends StatefulWidget {
     this.enabled = true,
     this.inputFormatters,
     this.maxPopupHeight = kAutoSuggestBoxPopupMaxHeight,
+    this.padding,
   })  : autovalidateMode = AutovalidateMode.disabled,
         validator = null;
 
@@ -179,6 +180,7 @@ class AutoSuggestBox<T> extends StatefulWidget {
     this.enabled = true,
     this.inputFormatters,
     this.maxPopupHeight = kAutoSuggestBoxPopupMaxHeight,
+    this.padding,
   });
 
   /// The list of items to display to the user to pick
@@ -349,6 +351,8 @@ class AutoSuggestBox<T> extends StatefulWidget {
   /// by default, it's limited to a 380px height. If the value provided is greater
   /// than the available space, the box is limited to the available space.
   final double maxPopupHeight;
+
+  final EdgeInsetsGeometry? padding;
 
   @override
   State<AutoSuggestBox<T>> createState() => AutoSuggestBoxState<T>();
@@ -772,6 +776,7 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
             clipBehavior: Clip.antiAliasWithSaveLayer,
             prefix: widget.leadingIcon,
             suffix: suffix,
+            padding: widget.padding ?? kTextBoxPadding,
             onChanged: _onChanged,
             onSubmitted: (text) => _onSubmitted(),
             style: widget.style,
@@ -880,10 +885,8 @@ class _AutoSuggestBoxOverlayState<T> extends State<_AutoSuggestBoxOverlay<T>> {
         child: Container(
           constraints: BoxConstraints(maxHeight: widget.maxHeight),
           decoration: ShapeDecoration(
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.vertical(
-                bottom: Radius.circular(4.0),
-              ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
             ),
             color: theme.resources.cardBackgroundFillColorDefault,
             shadows: [
@@ -901,43 +904,41 @@ class _AutoSuggestBoxOverlayState<T> extends State<_AutoSuggestBoxOverlay<T>> {
               ),
             ],
           ),
-          child: Acrylic(
-            child: ValueListenableBuilder<TextEditingValue>(
-              valueListenable: widget.controller,
-              builder: (context, value, _) {
-                final sortedItems = widget.sorter(value.text, items);
-                late Widget result;
-                if (sortedItems.isEmpty) {
-                  result = widget.noResultsFoundBuilder?.call(context) ??
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(bottom: 4.0),
-                        child: _AutoSuggestBoxOverlayTile(
-                          text: Text(localizations.noResultsFoundLabel),
-                        ),
-                      );
-                } else {
-                  result = ListView.builder(
-                    itemExtent: tileHeight,
-                    controller: scrollController,
-                    key: ValueKey<int>(sortedItems.length),
-                    shrinkWrap: true,
-                    padding: const EdgeInsetsDirectional.only(bottom: 4.0),
-                    itemCount: sortedItems.length,
-                    itemBuilder: (context, index) {
-                      final item = sortedItems[index];
-                      return widget.itemBuilder?.call(context, item) ??
-                          _AutoSuggestBoxOverlayTile(
-                            text: item.child ?? Text(item.label),
-                            semanticLabel: item.semanticLabel ?? item.label,
-                            selected: item._selected || widget.node.hasFocus,
-                            onSelected: () => widget.onSelected(item),
-                          );
-                    },
-                  );
-                }
-                return result;
-              },
-            ),
+          child: ValueListenableBuilder<TextEditingValue>(
+            valueListenable: widget.controller,
+            builder: (context, value, _) {
+              final sortedItems = widget.sorter(value.text, items);
+              late Widget result;
+              if (sortedItems.isEmpty) {
+                result = widget.noResultsFoundBuilder?.call(context) ??
+                    Padding(
+                      padding: const EdgeInsetsDirectional.only(bottom: 4.0),
+                      child: _AutoSuggestBoxOverlayTile(
+                        text: Text(localizations.noResultsFoundLabel),
+                      ),
+                    );
+              } else {
+                result = ListView.builder(
+                  itemExtent: tileHeight,
+                  controller: scrollController,
+                  key: ValueKey<int>(sortedItems.length),
+                  shrinkWrap: true,
+                  padding: const EdgeInsetsDirectional.only(bottom: 4.0),
+                  itemCount: sortedItems.length,
+                  itemBuilder: (context, index) {
+                    final item = sortedItems[index];
+                    return widget.itemBuilder?.call(context, item) ??
+                        _AutoSuggestBoxOverlayTile(
+                          text: item.child ?? Text(item.label),
+                          semanticLabel: item.semanticLabel ?? item.label,
+                          selected: item._selected || widget.node.hasFocus,
+                          onSelected: () => widget.onSelected(item),
+                        );
+                  },
+                );
+              }
+              return result;
+            },
           ),
         ),
       ),

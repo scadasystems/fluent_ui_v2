@@ -114,8 +114,10 @@ class TextFormBox extends ControllableFormBox {
     Clip clipBehavior = Clip.antiAlias,
     Widget? prefix,
     OverlayVisibilityMode prefixMode = OverlayVisibilityMode.always,
+    double? prefixSpacing,
     Widget? suffix,
     OverlayVisibilityMode suffixMode = OverlayVisibilityMode.always,
+    double? suffixSpacing,
     DragStartBehavior dragStartBehavior = DragStartBehavior.start,
     String? restorationId,
     MaxLengthEnforcement? maxLengthEnforcement,
@@ -217,8 +219,10 @@ class TextFormBox extends ControllableFormBox {
                   clipBehavior: clipBehavior,
                   prefix: prefix,
                   prefixMode: prefixMode,
+                  prefixSpacing: prefixSpacing,
                   suffix: suffix,
                   suffixMode: suffixMode,
+                  suffixSpacing: suffixSpacing,
                   highlightColor: (field.errorText == null)
                       ? highlightColor
                       : errorHighlightColor ?? Colors.red.defaultBrushFor(theme.brightness),

@@ -45,6 +45,8 @@ class Expander extends StatefulWidget {
     this.onStateChanged,
     this.headerBackgroundColor,
     this.headerShape,
+    this.headerPadding = const EdgeInsetsDirectional.only(start: 16.0),
+    this.headerFocusPadding = const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
     this.contentBackgroundColor,
     this.contentPadding = const EdgeInsets.all(16.0),
     this.contentShape,
@@ -118,6 +120,10 @@ class Expander extends StatefulWidget {
   /// Use the `open` property to determine whether the expander is open or not.
   final ExpanderShapeBuilder? headerShape;
 
+  ///[LulzM]
+  final EdgeInsetsGeometry? headerPadding;
+  final EdgeInsetsGeometry? headerFocusPadding;
+
   /// The content color of the content.
   final Color? contentBackgroundColor;
 
@@ -160,8 +166,7 @@ class Expander extends StatefulWidget {
   State<Expander> createState() => ExpanderState();
 }
 
-class ExpanderState extends State<Expander>
-    with SingleTickerProviderStateMixin {
+class ExpanderState extends State<Expander> with SingleTickerProviderStateMixin {
   late FluentThemeData _theme;
 
   late bool _isExpanded;
@@ -176,8 +181,7 @@ class ExpanderState extends State<Expander>
   void initState() {
     super.initState();
     _controller = AnimationController(vsync: this);
-    _isExpanded = PageStorage.of(context).readState(context) as bool? ??
-        widget.initiallyExpanded;
+    _isExpanded = PageStorage.of(context).readState(context) as bool? ?? widget.initiallyExpanded;
     if (_isExpanded == true) {
       _controller.value = 1;
     }
@@ -234,8 +238,7 @@ class ExpanderState extends State<Expander>
               minHeight: 42.0,
             ),
             decoration: ShapeDecoration(
-              color: widget.headerBackgroundColor?.resolve(states) ??
-                  theme.resources.cardBackgroundFillColorDefault,
+              color: widget.headerBackgroundColor?.resolve(states) ?? theme.resources.cardBackgroundFillColorDefault,
               shape: widget.headerShape?.call(_isExpanded) ??
                   RoundedRectangleBorder(
                     side: BorderSide(
@@ -247,7 +250,7 @@ class ExpanderState extends State<Expander>
                     ),
                   ),
             ),
-            padding: const EdgeInsetsDirectional.only(start: 16.0),
+            padding: widget.headerPadding,
             alignment: AlignmentDirectional.centerStart,
             child: Row(mainAxisSize: MainAxisSize.min, children: [
               if (widget.leading != null)
@@ -271,10 +274,7 @@ class ExpanderState extends State<Expander>
                 child: FocusBorder(
                   focused: states.isFocused,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10.0,
-                      vertical: 10.0,
-                    ),
+                    padding: widget.headerFocusPadding,
                     decoration: BoxDecoration(
                       color: ButtonThemeData.uncheckedInputColor(
                         _theme,
@@ -293,20 +293,15 @@ class ExpanderState extends State<Expander>
                             curve: Interval(
                               0.5,
                               1.0,
-                              curve: widget.animationCurve ??
-                                  _theme.animationCurve,
+                              curve: widget.animationCurve ?? _theme.animationCurve,
                             ),
                           )),
                           child: AnimatedSlide(
                             duration: theme.fastAnimationDuration,
                             curve: Curves.easeInCirc,
-                            offset: states.isPressed
-                                ? const Offset(0, 0.1)
-                                : Offset.zero,
+                            offset: states.isPressed ? const Offset(0, 0.1) : Offset.zero,
                             child: Icon(
-                              _isDown
-                                  ? FluentIcons.chevron_down
-                                  : FluentIcons.chevron_up,
+                              _isDown ? FluentIcons.chevron_down : FluentIcons.chevron_up,
                               size: 8.0,
                             ),
                           ),
@@ -336,11 +331,9 @@ class ExpanderState extends State<Expander>
                   side: BorderSide(
                     color: theme.resources.cardStrokeColorDefault,
                   ),
-                  borderRadius:
-                      const BorderRadius.vertical(bottom: Radius.circular(6.0)),
+                  borderRadius: const BorderRadius.vertical(bottom: Radius.circular(6.0)),
                 ),
-            color: widget.contentBackgroundColor ??
-                theme.resources.cardBackgroundFillColorSecondary,
+            color: widget.contentBackgroundColor ?? theme.resources.cardBackgroundFillColorSecondary,
           ),
           child: ExcludeFocus(
             excluding: !_isExpanded,

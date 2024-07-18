@@ -174,8 +174,7 @@ class FlyoutListTile extends StatelessWidget {
           states = {WidgetState.hovered};
         }
 
-        final foregroundColor =
-            ButtonThemeData.buttonForegroundColor(context, states);
+        final foregroundColor = ButtonThemeData.buttonForegroundColor(context, states);
 
         Widget content = Stack(children: [
           Container(
@@ -188,7 +187,7 @@ class FlyoutListTile extends StatelessWidget {
               borderRadius: radius,
             ),
             padding: const EdgeInsetsDirectional.only(
-              top: 4.0,
+              top: 8.0,
               bottom: 4.0,
               start: 10.0,
               end: 8.0,

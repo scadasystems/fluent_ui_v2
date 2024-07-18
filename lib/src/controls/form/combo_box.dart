@@ -882,6 +882,7 @@ class ComboBox<T> extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.popupColor,
+    this.padding,
     // When adding new arguments, consider adding similar arguments to
     // ComboBoxFormField.
   });
@@ -1078,6 +1079,9 @@ class ComboBox<T> extends StatefulWidget {
   /// If it is not provided, the default [Acrylic] color is used.
   final Color? popupColor;
 
+  ///[LulzM]
+  final EdgeInsetsGeometry? padding;
+
   @override
   State<ComboBox<T>> createState() => ComboBoxState<T>();
 }
@@ -1267,6 +1271,7 @@ class ComboBoxState<T> extends State<ComboBox<T>> {
     // If value is null (then _selectedIndex is null) then we
     // display the placeholder or nothing at all.
     final Widget innerItemsWidget;
+
     if (items.isEmpty) {
       innerItemsWidget = Container();
     } else {
@@ -1276,48 +1281,56 @@ class ComboBoxState<T> extends State<ComboBox<T>> {
           index: _selectedIndex ?? placeholderIndex,
           alignment: AlignmentDirectional.centerStart,
           children: items.map((Widget item) {
-            return Column(mainAxisSize: MainAxisSize.min, children: [item]);
+            return item;
+            // return Column(
+            //   mainAxisSize: MainAxisSize.min,
+            //   children: [
+            //     item,
+            //   ],
+            // );
           }).toList(),
         ),
       );
     }
 
-    Widget result = Builder(builder: (context) {
-      return DefaultTextStyle.merge(
-        style: isEnabled
-            ? textStyle!
-            : textStyle!.copyWith(
-                color: theme.resources.textFillColorDisabled,
-              ),
-        child: Container(
-          padding: padding.resolve(Directionality.of(context)),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (widget.prefix != null) ...[
-                widget.prefix!,
-                if (widget.prefixMargin != null)
-                  SizedBox(
-                    width: widget.prefixMargin!,
-                  ),
-              ],
-              if (widget.isExpanded) Expanded(child: innerItemsWidget) else innerItemsWidget,
-              Padding(
-                padding: const EdgeInsetsDirectional.only(start: 8.0),
-                child: IconTheme.merge(
-                  data: IconThemeData(
-                    color: iconColor(context),
-                    size: widget.iconSize,
-                  ),
-                  child: widget.icon,
+    Widget result = Builder(
+      builder: (context) {
+        return DefaultTextStyle.merge(
+          style: isEnabled
+              ? textStyle!
+              : textStyle!.copyWith(
+                  color: theme.resources.textFillColorDisabled,
                 ),
-              ),
-            ],
+          child: Container(
+            padding: widget.padding ?? padding.resolve(Directionality.of(context)),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.prefix != null) ...[
+                  widget.prefix!,
+                  if (widget.prefixMargin != null)
+                    SizedBox(
+                      width: widget.prefixMargin!,
+                    ),
+                ],
+                if (widget.isExpanded) Expanded(child: innerItemsWidget) else innerItemsWidget,
+                Padding(
+                  padding: const EdgeInsetsDirectional.only(start: 8.0),
+                  child: IconTheme.merge(
+                    data: IconThemeData(
+                      color: iconColor(context),
+                      size: widget.iconSize,
+                    ),
+                    child: widget.icon,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
     return Semantics(
       button: true,
@@ -1328,7 +1341,8 @@ class ComboBoxState<T> extends State<ComboBox<T>> {
           autofocus: widget.autofocus,
           focusNode: focusNode,
           style: const ButtonStyle(
-              padding: WidgetStatePropertyAll(EdgeInsets.zero)),
+            padding: WidgetStatePropertyAll(EdgeInsets.zero),
+          ),
           child: result,
         ),
       ),

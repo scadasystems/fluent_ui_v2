@@ -434,6 +434,13 @@ class FlyoutController with ChangeNotifier {
   /// Whether this flyout controller is attached to any [FlyoutTarget]
   bool get isAttached => _attachState != null;
 
+  /// Whether the flyout is open
+  ///
+  /// See also:
+  ///
+  ///  * [showFlyout], which opens the flyout
+  bool get isOpen => _open;
+
   /// Attaches this controller to a [FlyoutTarget] widget.
   ///
   /// If already attached, the current state is detached and replaced by the
@@ -455,13 +462,6 @@ class FlyoutController with ChangeNotifier {
   void _ensureAttached() {
     assert(isAttached, 'This controller must be attached to a FlyoutTarget');
   }
-
-  /// Whether the flyout is open
-  ///
-  /// See also:
-  ///
-  ///  * [showFlyout], which opens the flyout
-  bool get isOpen => _open;
 
   /// Shows a flyout.
   ///

@@ -89,9 +89,13 @@ class FlyoutState extends State<Flyout> {
 
   @override
   Widget build(BuildContext context) {
+    if (!mounted) return const SizedBox.shrink();
+
     return KeyedSubtree(
       key: _key,
-      child: Builder(builder: widget.builder),
+      child: Builder(
+        builder: widget.builder,
+      ),
     );
   }
 }

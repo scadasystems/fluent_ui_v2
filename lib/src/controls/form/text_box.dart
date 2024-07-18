@@ -141,8 +141,10 @@ class TextBox extends StatefulWidget {
     this.placeholderStyle,
     this.prefix,
     this.prefixMode = OverlayVisibilityMode.always,
+    this.prefixSpacing,
     this.suffix,
     this.suffixMode = OverlayVisibilityMode.always,
+    this.suffixSpacing,
     TextInputType? keyboardType,
     this.textInputAction,
     this.textCapitalization = TextCapitalization.none,
@@ -279,6 +281,8 @@ class TextBox extends StatefulWidget {
   /// An optional [Widget] to display before the text.
   final Widget? prefix;
 
+  final double? prefixSpacing;
+
   /// Controls the visibility of the [prefix] widget based on the state of
   /// text entry when the [prefix] argument is not null.
   ///
@@ -289,6 +293,8 @@ class TextBox extends StatefulWidget {
 
   /// An optional [Widget] to display after the text.
   final Widget? suffix;
+
+  final double? suffixSpacing;
 
   /// Controls the visibility of the [suffix] widget based on the state of
   /// text entry when the [suffix] argument is not null.
@@ -834,24 +840,29 @@ class _TextBoxState extends State<TextBox>
     return ValueListenableBuilder<TextEditingValue>(
       valueListenable: _effectiveController,
       child: editableText,
-      builder: (BuildContext context, TextEditingValue? text, Widget? child) {
-        return Row(children: <Widget>[
-          // Insert a prefix at the front if the prefix visibility mode matches
-          // the current text state.
-          if (_showPrefixWidget(text!)) ...[
-            const SizedBox(width: 8.0),
-            widget.prefix!,
-          ],
-          // In the middle part, stack the placeholder on top of the main EditableText
-          // if needed.
-          Expanded(
-            child: Stack(
-              children: <Widget>[
-                if (widget.placeholder != null && text.text.isEmpty)
-                  SizedBox(
-                    width: double.infinity,
-                    child: Padding(
-                      padding: widget.padding,
+      builder: (context, text, child) {
+        return Row(
+          children: [
+            // Insert a prefix at the front if the prefix visibility mode matches
+            // the current text state.
+            if (_showPrefixWidget(text)) ...[
+              widget.prefix!,
+              SizedBox(width: widget.prefixSpacing ?? 6.0),
+            ],
+            // In the middle part, stack the placeholder on top of the main EditableText
+            // if needed.
+            Expanded(
+              child: Stack(
+                alignment: widget.textAlignVertical == TextAlignVertical.top
+                    ? Alignment.topLeft
+                    : widget.textAlignVertical == TextAlignVertical.center
+                        ? Alignment.centerLeft
+                        : Alignment.bottomCenter,
+                children: [
+                  if (widget.placeholder != null && text.text.isEmpty)
+                    SizedBox(
+                      width: double.infinity,
+                      // padding: widget.padding,
                       child: Text(
                         widget.placeholder!,
                         maxLines: widget.maxLines,
@@ -860,17 +871,17 @@ class _TextBoxState extends State<TextBox>
                         textAlign: widget.textAlign,
                       ),
                     ),
-                  ),
-                child!,
-              ],
+                  child!,
+                ],
+              ),
             ),
-          ),
-          // First add the explicit suffix if the suffix visibility mode matches.
-          if (_showSuffixWidget(text)) ...[
-            widget.suffix!,
-            const SizedBox(width: 8.0),
-          ]
-        ]);
+            // First add the explicit suffix if the suffix visibility mode matches.
+            if (_showSuffixWidget(text)) ...[
+              SizedBox(width: widget.suffixSpacing ?? 6.0),
+              widget.suffix!,
+            ]
+          ],
+        );
       },
     );
   }
@@ -961,71 +972,68 @@ class _TextBoxState extends State<TextBox>
                 widget.spellCheckConfiguration!.misspelledTextStyle ?? TextBox.fluentMisspelledTextStyle)
         : const SpellCheckConfiguration.disabled();
 
-    final Widget paddedEditable = Padding(
-      padding: widget.padding,
-      child: RepaintBoundary(
-        child: UnmanagedRestorationScope(
-          bucket: bucket,
-          child: EditableText(
-            key: editableTextKey,
-            controller: controller,
-            readOnly: widget.readOnly,
-            showCursor: widget.showCursor,
-            showSelectionHandles: _showSelectionHandles,
-            focusNode: _effectiveFocusNode,
-            keyboardType: widget.keyboardType,
-            textInputAction: widget.textInputAction,
-            textCapitalization: widget.textCapitalization,
-            style: textStyle,
-            strutStyle: widget.strutStyle,
-            textAlign: widget.textAlign,
-            textDirection: widget.textDirection,
-            autofocus: widget.autofocus,
-            obscuringCharacter: widget.obscuringCharacter,
-            obscureText: widget.obscureText,
-            autocorrect: widget.autocorrect,
-            smartDashesType: widget.smartDashesType,
-            smartQuotesType: widget.smartQuotesType,
-            enableSuggestions: widget.enableSuggestions,
-            maxLines: widget.maxLines,
-            minLines: widget.minLines,
-            expands: widget.expands,
-            magnifierConfiguration: widget.magnifierConfiguration ?? TextBox._fluentMagnifierConfiguration,
-            // Only show the selection highlight when the text field is focused.
-            selectionColor: _effectiveFocusNode.hasFocus ? selectionColor : null,
-            selectionControls: widget.selectionEnabled ? textSelectionControls : null,
-            onChanged: widget.onChanged,
-            onSelectionChanged: _handleSelectionChanged,
-            onEditingComplete: widget.onEditingComplete,
-            onSubmitted: widget.onSubmitted,
-            onTapOutside: widget.onTapOutside,
-            inputFormatters: formatters,
-            rendererIgnoresPointer: true,
-            cursorWidth: widget.cursorWidth,
-            cursorHeight: widget.cursorHeight,
-            cursorRadius: widget.cursorRadius,
-            cursorColor: cursorColor,
-            cursorOpacityAnimates: true,
-            cursorOffset: cursorOffset,
-            paintCursorAboveText: true,
-            autocorrectionTextRectColor: selectionColor,
-            backgroundCursorColor: disabledColor,
-            selectionHeightStyle: widget.selectionHeightStyle,
-            selectionWidthStyle: widget.selectionWidthStyle,
-            scrollPadding: widget.scrollPadding,
-            keyboardAppearance: keyboardAppearance,
-            dragStartBehavior: widget.dragStartBehavior,
-            scrollController: widget.scrollController,
-            scrollPhysics: widget.scrollPhysics,
-            enableInteractiveSelection: widget.enableInteractiveSelection,
-            autofillClient: this,
-            clipBehavior: widget.clipBehavior,
-            restorationId: 'editable',
-            scribbleEnabled: widget.scribbleEnabled,
-            enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
-            contextMenuBuilder: widget.contextMenuBuilder,
-            spellCheckConfiguration: spellCheckConfiguration,
-          ),
+    final Widget paddedEditable = RepaintBoundary(
+      child: UnmanagedRestorationScope(
+        bucket: bucket,
+        child: EditableText(
+          key: editableTextKey,
+          controller: controller,
+          readOnly: widget.readOnly,
+          showCursor: widget.showCursor,
+          showSelectionHandles: _showSelectionHandles,
+          focusNode: _effectiveFocusNode,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          textCapitalization: widget.textCapitalization,
+          style: textStyle,
+          strutStyle: widget.strutStyle,
+          textAlign: widget.textAlign,
+          textDirection: widget.textDirection,
+          autofocus: widget.autofocus,
+          obscuringCharacter: widget.obscuringCharacter,
+          obscureText: widget.obscureText,
+          autocorrect: widget.autocorrect,
+          smartDashesType: widget.smartDashesType,
+          smartQuotesType: widget.smartQuotesType,
+          enableSuggestions: widget.enableSuggestions,
+          maxLines: widget.maxLines,
+          minLines: widget.minLines,
+          expands: widget.expands,
+          magnifierConfiguration: widget.magnifierConfiguration ?? TextBox._fluentMagnifierConfiguration,
+          // Only show the selection highlight when the text field is focused.
+          selectionColor: _effectiveFocusNode.hasFocus ? selectionColor : null,
+          selectionControls: widget.selectionEnabled ? textSelectionControls : null,
+          onChanged: widget.onChanged,
+          onSelectionChanged: _handleSelectionChanged,
+          onEditingComplete: widget.onEditingComplete,
+          onSubmitted: widget.onSubmitted,
+          onTapOutside: widget.onTapOutside,
+          inputFormatters: formatters,
+          rendererIgnoresPointer: true,
+          cursorWidth: widget.cursorWidth,
+          cursorHeight: widget.cursorHeight,
+          cursorRadius: widget.cursorRadius,
+          cursorColor: cursorColor,
+          cursorOpacityAnimates: true,
+          cursorOffset: cursorOffset,
+          paintCursorAboveText: true,
+          autocorrectionTextRectColor: selectionColor,
+          backgroundCursorColor: disabledColor,
+          selectionHeightStyle: widget.selectionHeightStyle,
+          selectionWidthStyle: widget.selectionWidthStyle,
+          scrollPadding: widget.scrollPadding,
+          keyboardAppearance: keyboardAppearance,
+          dragStartBehavior: widget.dragStartBehavior,
+          scrollController: widget.scrollController,
+          scrollPhysics: widget.scrollPhysics,
+          enableInteractiveSelection: widget.enableInteractiveSelection,
+          autofillClient: this,
+          clipBehavior: widget.clipBehavior,
+          restorationId: 'editable',
+          scribbleEnabled: widget.scribbleEnabled,
+          enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
+          contextMenuBuilder: widget.contextMenuBuilder,
+          spellCheckConfiguration: spellCheckConfiguration,
         ),
       ),
     );
@@ -1145,6 +1153,7 @@ class _TextBoxState extends State<TextBox>
                     constraints: const BoxConstraints(
                       minHeight: 32.0,
                     ),
+                    padding: widget.padding, //FIXME 여기 패딩 값 적용
                     child: _selectionGestureDetectorBuilder.buildGestureDetector(
                       behavior: HitTestBehavior.translucent,
                       child: Align(
