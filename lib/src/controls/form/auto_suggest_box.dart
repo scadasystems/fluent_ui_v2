@@ -138,6 +138,8 @@ class AutoSuggestBox<T> extends StatefulWidget {
     this.inputFormatters,
     this.maxPopupHeight = kAutoSuggestBoxPopupMaxHeight,
     this.padding,
+    this.overlayBackgroundColor,
+    this.overlayTextStyle,
   })  : autovalidateMode = AutovalidateMode.disabled,
         validator = null;
 
@@ -181,6 +183,8 @@ class AutoSuggestBox<T> extends StatefulWidget {
     this.inputFormatters,
     this.maxPopupHeight = kAutoSuggestBoxPopupMaxHeight,
     this.padding,
+    this.overlayBackgroundColor,
+    this.overlayTextStyle,
   });
 
   /// The list of items to display to the user to pick
@@ -353,6 +357,9 @@ class AutoSuggestBox<T> extends StatefulWidget {
   final double maxPopupHeight;
 
   final EdgeInsetsGeometry? padding;
+
+  final Color? overlayBackgroundColor;
+  final TextStyle? overlayTextStyle;
 
   @override
   State<AutoSuggestBox<T>> createState() => AutoSuggestBoxState<T>();
@@ -565,6 +572,8 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
                 focusStream: _focusStreamController.stream,
                 itemsStream: _dynamicItemsController.stream,
                 sorter: sorter,
+                overlayBackgroundColor: widget.overlayBackgroundColor,
+                overlayTextStyle: widget.overlayTextStyle,
                 onSelected: (AutoSuggestBoxItem<T> item) {
                   item.onSelected?.call();
                   widget.onSelected?.call(item);
@@ -720,21 +729,54 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
             return KeyEventResult.ignored;
           }
         },
-        child: LayoutBuilder(builder: (context, constraints) {
-          _width ??= constraints.maxWidth;
-          if (_width! != constraints.maxWidth) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (_entry != null && _entry!.mounted) {
-                _entry!.remove();
-                _entry = null;
-                showOverlay();
-              }
-            });
-            _width = constraints.maxWidth;
-          }
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            _width ??= constraints.maxWidth;
+            if (_width! != constraints.maxWidth) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (_entry != null && _entry!.mounted) {
+                  _entry!.remove();
+                  _entry = null;
+                  showOverlay();
+                }
+              });
+              _width = constraints.maxWidth;
+            }
 
-          if (isForm) {
-            return TextFormBox(
+            if (isForm) {
+              return TextFormBox(
+                key: _textBoxKey,
+                controller: _controller,
+                focusNode: _focusNode,
+                autofocus: widget.autofocus,
+                placeholder: widget.placeholder,
+                placeholderStyle: widget.placeholderStyle,
+                clipBehavior: Clip.antiAliasWithSaveLayer,
+                prefix: widget.leadingIcon,
+                suffix: suffix,
+                onChanged: _onChanged,
+                onFieldSubmitted: (text) => _onSubmitted(),
+                style: widget.style,
+                decoration: widget.decoration,
+                highlightColor: widget.highlightColor,
+                unfocusedColor: widget.unfocusedColor,
+                cursorColor: widget.cursorColor,
+                cursorHeight: widget.cursorHeight,
+                cursorRadius: widget.cursorRadius,
+                cursorWidth: widget.cursorWidth,
+                showCursor: widget.showCursor,
+                scrollPadding: widget.scrollPadding,
+                selectionHeightStyle: widget.selectionHeightStyle,
+                selectionWidthStyle: widget.selectionWidthStyle,
+                validator: widget.validator,
+                autovalidateMode: widget.autovalidateMode,
+                textInputAction: widget.textInputAction,
+                keyboardAppearance: widget.keyboardAppearance,
+                enabled: widget.enabled,
+                inputFormatters: widget.inputFormatters,
+              );
+            }
+            return TextBox(
               key: _textBoxKey,
               controller: _controller,
               focusNode: _focusNode,
@@ -744,10 +786,12 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
               clipBehavior: Clip.antiAliasWithSaveLayer,
               prefix: widget.leadingIcon,
               suffix: suffix,
+              padding: widget.padding ?? kTextBoxPadding,
               onChanged: _onChanged,
-              onFieldSubmitted: (text) => _onSubmitted(),
+              onSubmitted: (text) => _onSubmitted(),
               style: widget.style,
               decoration: widget.decoration,
+              foregroundDecoration: widget.foregroundDecoration,
               highlightColor: widget.highlightColor,
               unfocusedColor: widget.unfocusedColor,
               cursorColor: widget.cursorColor,
@@ -758,46 +802,13 @@ class AutoSuggestBoxState<T> extends State<AutoSuggestBox<T>> {
               scrollPadding: widget.scrollPadding,
               selectionHeightStyle: widget.selectionHeightStyle,
               selectionWidthStyle: widget.selectionWidthStyle,
-              validator: widget.validator,
-              autovalidateMode: widget.autovalidateMode,
               textInputAction: widget.textInputAction,
               keyboardAppearance: widget.keyboardAppearance,
               enabled: widget.enabled,
               inputFormatters: widget.inputFormatters,
             );
-          }
-          return TextBox(
-            key: _textBoxKey,
-            controller: _controller,
-            focusNode: _focusNode,
-            autofocus: widget.autofocus,
-            placeholder: widget.placeholder,
-            placeholderStyle: widget.placeholderStyle,
-            clipBehavior: Clip.antiAliasWithSaveLayer,
-            prefix: widget.leadingIcon,
-            suffix: suffix,
-            padding: widget.padding ?? kTextBoxPadding,
-            onChanged: _onChanged,
-            onSubmitted: (text) => _onSubmitted(),
-            style: widget.style,
-            decoration: widget.decoration,
-            foregroundDecoration: widget.foregroundDecoration,
-            highlightColor: widget.highlightColor,
-            unfocusedColor: widget.unfocusedColor,
-            cursorColor: widget.cursorColor,
-            cursorHeight: widget.cursorHeight,
-            cursorRadius: widget.cursorRadius,
-            cursorWidth: widget.cursorWidth,
-            showCursor: widget.showCursor,
-            scrollPadding: widget.scrollPadding,
-            selectionHeightStyle: widget.selectionHeightStyle,
-            selectionWidthStyle: widget.selectionWidthStyle,
-            textInputAction: widget.textInputAction,
-            keyboardAppearance: widget.keyboardAppearance,
-            enabled: widget.enabled,
-            inputFormatters: widget.inputFormatters,
-          );
-        }),
+          },
+        ),
       ),
     );
   }
@@ -815,6 +826,8 @@ class _AutoSuggestBoxOverlay<T> extends StatefulWidget {
     required this.itemsStream,
     required this.sorter,
     required this.maxHeight,
+    this.overlayBackgroundColor,
+    this.overlayTextStyle,
     required this.noResultsFoundBuilder,
   });
 
@@ -827,6 +840,8 @@ class _AutoSuggestBoxOverlay<T> extends StatefulWidget {
   final Stream<List<AutoSuggestBoxItem<T>>> itemsStream;
   final AutoSuggestBoxSorter<T> sorter;
   final double maxHeight;
+  final Color? overlayBackgroundColor;
+  final TextStyle? overlayTextStyle;
   final WidgetBuilder? noResultsFoundBuilder;
 
   @override
@@ -888,7 +903,7 @@ class _AutoSuggestBoxOverlayState<T> extends State<_AutoSuggestBoxOverlay<T>> {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(4),
             ),
-            color: theme.resources.cardBackgroundFillColorDefault,
+            color: widget.overlayBackgroundColor ?? theme.resources.cardBackgroundFillColorDefault,
             shadows: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
@@ -914,7 +929,10 @@ class _AutoSuggestBoxOverlayState<T> extends State<_AutoSuggestBoxOverlay<T>> {
                     Padding(
                       padding: const EdgeInsetsDirectional.only(bottom: 4.0),
                       child: _AutoSuggestBoxOverlayTile(
-                        text: Text(localizations.noResultsFoundLabel),
+                        text: Text(
+                          localizations.noResultsFoundLabel,
+                          style: widget.overlayTextStyle,
+                        ),
                       ),
                     );
               } else {
@@ -929,7 +947,11 @@ class _AutoSuggestBoxOverlayState<T> extends State<_AutoSuggestBoxOverlay<T>> {
                     final item = sortedItems[index];
                     return widget.itemBuilder?.call(context, item) ??
                         _AutoSuggestBoxOverlayTile(
-                          text: item.child ?? Text(item.label),
+                          text: item.child ??
+                              Text(
+                                item.label,
+                                style: widget.overlayTextStyle,
+                              ),
                           semanticLabel: item.semanticLabel ?? item.label,
                           selected: item._selected || widget.node.hasFocus,
                           onSelected: () => widget.onSelected(item),
