@@ -640,6 +640,9 @@ class _TextBoxState extends State<TextBox>
   bool get selectionEnabled => widget.selectionEnabled;
   // End of API for TextSelectionGestureDetectorBuilderDelegate.
 
+  late final _themeData = FluentTheme.of(context);
+  late final _disabledColor = _themeData.resources.textFillColorDisabled;
+
   @override
   void initState() {
     super.initState();
@@ -846,7 +849,18 @@ class _TextBoxState extends State<TextBox>
             // Insert a prefix at the front if the prefix visibility mode matches
             // the current text state.
             if (_showPrefixWidget(text)) ...[
-              widget.prefix!,
+              //TODO Enable 가 false 이면 색상 변경하는 부분
+              IconTheme(
+                data: IconThemeData(
+                  color: widget.enabled ?? true ? _themeData.iconTheme.color : _disabledColor,
+                ),
+                child: DefaultTextStyle(
+                  style: TextStyle(
+                    color: widget.enabled ?? true ? _themeData.resources.textFillColorPrimary : _disabledColor,
+                  ),
+                  child: widget.prefix!,
+                ),
+              ),
               SizedBox(width: widget.prefixSpacing ?? 6.0),
             ],
             // In the middle part, stack the placeholder on top of the main EditableText
@@ -862,7 +876,6 @@ class _TextBoxState extends State<TextBox>
                   if (widget.placeholder != null && text.text.isEmpty)
                     SizedBox(
                       width: double.infinity,
-                      // padding: widget.padding,
                       child: Text(
                         widget.placeholder!,
                         maxLines: widget.maxLines,
@@ -878,7 +891,22 @@ class _TextBoxState extends State<TextBox>
             // First add the explicit suffix if the suffix visibility mode matches.
             if (_showSuffixWidget(text)) ...[
               SizedBox(width: widget.suffixSpacing ?? 6.0),
-              widget.suffix!,
+              //TODO Enable 가 false 이면 색상 변경하는 부분
+              IconTheme(
+                data: IconThemeData(
+                  color: (widget.enabled ?? true) //
+                      ? _themeData.iconTheme.color
+                      : _disabledColor,
+                ),
+                child: DefaultTextStyle(
+                  style: TextStyle(
+                    color: (widget.enabled ?? true) //
+                        ? _themeData.resources.textFillColorPrimary
+                        : _disabledColor,
+                  ),
+                  child: widget.suffix!,
+                ),
+              ),
             ]
           ],
         );
@@ -948,9 +976,10 @@ class _TextBoxState extends State<TextBox>
           maxLengthEnforcement: _effectiveMaxLengthEnforcement,
         ),
     ];
-    final themeData = FluentTheme.of(context);
 
+    final themeData = FluentTheme.of(context);
     final disabledColor = themeData.resources.textFillColorDisabled;
+
     final textStyle = (themeData.typography.body ?? const TextStyle())
         .merge(TextStyle(
           color: enabled ? themeData.resources.textFillColorPrimary : disabledColor,
@@ -976,64 +1005,64 @@ class _TextBoxState extends State<TextBox>
       child: UnmanagedRestorationScope(
         bucket: bucket,
         child: EditableText(
-          key: editableTextKey,
-          controller: controller,
-          readOnly: widget.readOnly,
-          showCursor: widget.showCursor,
-          showSelectionHandles: _showSelectionHandles,
-          focusNode: _effectiveFocusNode,
-          keyboardType: widget.keyboardType,
-          textInputAction: widget.textInputAction,
-          textCapitalization: widget.textCapitalization,
-          style: textStyle,
-          strutStyle: widget.strutStyle,
-          textAlign: widget.textAlign,
-          textDirection: widget.textDirection,
-          autofocus: widget.autofocus,
-          obscuringCharacter: widget.obscuringCharacter,
-          obscureText: widget.obscureText,
+          // Only show the selection highlight when the text field is focused.
           autocorrect: widget.autocorrect,
-          smartDashesType: widget.smartDashesType,
-          smartQuotesType: widget.smartQuotesType,
+          autocorrectionTextRectColor: selectionColor,
+          autofillClient: this,
+          autofocus: widget.autofocus,
+          backgroundCursorColor: disabledColor,
+          clipBehavior: widget.clipBehavior,
+          contextMenuBuilder: widget.contextMenuBuilder,
+          controller: controller,
+          cursorColor: cursorColor,
+          cursorHeight: widget.cursorHeight,
+          cursorOffset: cursorOffset,
+          cursorOpacityAnimates: true,
+          cursorRadius: widget.cursorRadius,
+          cursorWidth: widget.cursorWidth,
+          dragStartBehavior: widget.dragStartBehavior,
+          enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
+          enableInteractiveSelection: widget.enableInteractiveSelection,
           enableSuggestions: widget.enableSuggestions,
+          expands: widget.expands,
+          focusNode: _effectiveFocusNode,
+          inputFormatters: formatters,
+          key: editableTextKey,
+          keyboardAppearance: keyboardAppearance,
+          keyboardType: widget.keyboardType,
+          magnifierConfiguration: widget.magnifierConfiguration ?? TextBox._fluentMagnifierConfiguration,
           maxLines: widget.maxLines,
           minLines: widget.minLines,
-          expands: widget.expands,
-          magnifierConfiguration: widget.magnifierConfiguration ?? TextBox._fluentMagnifierConfiguration,
-          // Only show the selection highlight when the text field is focused.
-          selectionColor: _effectiveFocusNode.hasFocus ? selectionColor : null,
-          selectionControls: widget.selectionEnabled ? textSelectionControls : null,
+          obscureText: widget.obscureText,
+          obscuringCharacter: widget.obscuringCharacter,
           onChanged: widget.onChanged,
-          onSelectionChanged: _handleSelectionChanged,
           onEditingComplete: widget.onEditingComplete,
+          onSelectionChanged: _handleSelectionChanged,
           onSubmitted: widget.onSubmitted,
           onTapOutside: widget.onTapOutside,
-          inputFormatters: formatters,
-          rendererIgnoresPointer: true,
-          cursorWidth: widget.cursorWidth,
-          cursorHeight: widget.cursorHeight,
-          cursorRadius: widget.cursorRadius,
-          cursorColor: cursorColor,
-          cursorOpacityAnimates: true,
-          cursorOffset: cursorOffset,
           paintCursorAboveText: true,
-          autocorrectionTextRectColor: selectionColor,
-          backgroundCursorColor: disabledColor,
-          selectionHeightStyle: widget.selectionHeightStyle,
-          selectionWidthStyle: widget.selectionWidthStyle,
-          scrollPadding: widget.scrollPadding,
-          keyboardAppearance: keyboardAppearance,
-          dragStartBehavior: widget.dragStartBehavior,
-          scrollController: widget.scrollController,
-          scrollPhysics: widget.scrollPhysics,
-          enableInteractiveSelection: widget.enableInteractiveSelection,
-          autofillClient: this,
-          clipBehavior: widget.clipBehavior,
+          readOnly: widget.readOnly,
+          rendererIgnoresPointer: true,
           restorationId: 'editable',
           scribbleEnabled: widget.scribbleEnabled,
-          enableIMEPersonalizedLearning: widget.enableIMEPersonalizedLearning,
-          contextMenuBuilder: widget.contextMenuBuilder,
+          scrollController: widget.scrollController,
+          scrollPadding: widget.scrollPadding,
+          scrollPhysics: widget.scrollPhysics,
+          selectionColor: _effectiveFocusNode.hasFocus ? selectionColor : null,
+          selectionControls: widget.selectionEnabled ? textSelectionControls : null,
+          selectionHeightStyle: widget.selectionHeightStyle,
+          selectionWidthStyle: widget.selectionWidthStyle,
+          showCursor: widget.showCursor,
+          showSelectionHandles: _showSelectionHandles,
+          smartDashesType: widget.smartDashesType,
+          smartQuotesType: widget.smartQuotesType,
           spellCheckConfiguration: spellCheckConfiguration,
+          strutStyle: widget.strutStyle,
+          style: textStyle,
+          textAlign: widget.textAlign,
+          textCapitalization: widget.textCapitalization,
+          textDirection: widget.textDirection,
+          textInputAction: widget.textInputAction,
         ),
       ),
     );
@@ -1151,7 +1180,7 @@ class _TextBoxState extends State<TextBox>
                   child: Container(
                     foregroundDecoration: foregroundDecoration,
                     constraints: const BoxConstraints(
-                      minHeight: 32.0,
+                      minHeight: 28.0,
                     ),
                     padding: widget.padding, //FIXME 여기 패딩 값 적용
                     child: _selectionGestureDetectorBuilder.buildGestureDetector(
