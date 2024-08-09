@@ -2,10 +2,7 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/cupertino.dart' show CupertinoScrollbar;
 import 'package:flutter/material.dart' as m;
 import 'package:flutter_localizations/flutter_localizations.dart'
-    show
-        GlobalMaterialLocalizations,
-        GlobalWidgetsLocalizations,
-        GlobalCupertinoLocalizations;
+    show GlobalMaterialLocalizations, GlobalWidgetsLocalizations, GlobalCupertinoLocalizations;
 
 /// An application that uses fluent design.
 ///
@@ -75,6 +72,7 @@ class FluentApp extends StatefulWidget {
     this.supportedLocales = FluentLocalizations.supportedLocales,
     this.showPerformanceOverlay = false,
     this.showSemanticsDebugger = false,
+    this.debugShowWidgetInspector = false,
     this.debugShowCheckedModeBanner = true,
     this.shortcuts,
     this.actions,
@@ -111,6 +109,7 @@ class FluentApp extends StatefulWidget {
     this.supportedLocales = FluentLocalizations.supportedLocales,
     this.showPerformanceOverlay = false,
     this.showSemanticsDebugger = false,
+    this.debugShowWidgetInspector = false,
     this.debugShowCheckedModeBanner = true,
     this.shortcuts,
     this.actions,
@@ -119,17 +118,12 @@ class FluentApp extends StatefulWidget {
   })  : assert(() {
           if (routerConfig != null) {
             assert(
-              (routeInformationProvider ??
-                      routeInformationParser ??
-                      routerDelegate ??
-                      backButtonDispatcher) ==
-                  null,
+              (routeInformationProvider ?? routeInformationParser ?? routerDelegate ?? backButtonDispatcher) == null,
               'If the routerConfig is provided, all the other router delegates must not be provided',
             );
             return true;
           }
-          assert(routerDelegate != null,
-              'Either one of routerDelegate or routerConfig must be provided');
+          assert(routerDelegate != null, 'Either one of routerDelegate or routerConfig must be provided');
           assert(
             routeInformationProvider == null || routeInformationParser != null,
             'If routeInformationProvider is provided, routeInformationParser must also be provided',
@@ -286,6 +280,9 @@ class FluentApp extends StatefulWidget {
   /// reported by the framework.
   final bool showSemanticsDebugger;
 
+  /// {@macro flutter.widgets.widgetsApp.debugShowWidgetInspector}
+  final bool debugShowWidgetInspector;
+
   /// {@macro flutter.widgets.widgetsApp.debugShowCheckedModeBanner}
   final bool debugShowCheckedModeBanner;
 
@@ -398,8 +395,7 @@ class _FluentAppState extends State<FluentApp> {
     yield GlobalWidgetsLocalizations.delegate;
   }
 
-  bool get _usesRouter =>
-      widget.routerDelegate != null || widget.routerConfig != null;
+  bool get _usesRouter => widget.routerDelegate != null || widget.routerConfig != null;
 
   @override
   Widget build(BuildContext context) {
@@ -416,8 +412,7 @@ class _FluentAppState extends State<FluentApp> {
   FluentThemeData theme(BuildContext context) {
     final mode = widget.themeMode ?? ThemeMode.system;
     final platformBrightness = MediaQuery.platformBrightnessOf(context);
-    final usedarkStyle = mode == ThemeMode.dark ||
-        (mode == ThemeMode.system && platformBrightness == Brightness.dark);
+    final usedarkStyle = mode == ThemeMode.dark || (mode == ThemeMode.system && platformBrightness == Brightness.dark);
 
     final data = () {
       late FluentThemeData result;
@@ -509,6 +504,7 @@ class _FluentAppState extends State<FluentApp> {
         supportedLocales: widget.supportedLocales,
         showPerformanceOverlay: widget.showPerformanceOverlay,
         showSemanticsDebugger: widget.showSemanticsDebugger,
+        debugShowWidgetInspector: widget.debugShowWidgetInspector,
         debugShowCheckedModeBanner: widget.debugShowCheckedModeBanner,
         shortcuts: widget.shortcuts,
         actions: widget.actions,
@@ -537,6 +533,7 @@ class _FluentAppState extends State<FluentApp> {
       supportedLocales: widget.supportedLocales,
       showPerformanceOverlay: widget.showPerformanceOverlay,
       showSemanticsDebugger: widget.showSemanticsDebugger,
+      debugShowWidgetInspector: widget.debugShowWidgetInspector,
       debugShowCheckedModeBanner: widget.debugShowCheckedModeBanner,
       shortcuts: widget.shortcuts,
       actions: widget.actions,
